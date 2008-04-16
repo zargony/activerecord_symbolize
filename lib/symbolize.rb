@@ -22,7 +22,7 @@ module Symbolize
       attr_names.each do |attr_name|
         attr_name = attr_name.to_s
         class_eval("def #{attr_name}; read_and_symbolize_attribute('#{attr_name}'); end")
-        class_eval("def #{attr_name}= (value); write_attribute('#{attr_name}', value.to_s); end")
+        class_eval("def #{attr_name}= (value); write_symbolized_attribute('#{attr_name}', value); end")
       end
     end
   end
@@ -30,6 +30,11 @@ module Symbolize
   # Return an attribute's value as a symbol or nil
   def read_and_symbolize_attribute (attr_name)
     read_attribute(attr_name).to_sym rescue nil
+  end
+
+  # Write a symbolized value
+  def write_symbolized_attribute (attr_name, value)
+    write_attribute(attr_name, (value.to_sym && value.to_sym.to_s rescue nil))
   end
 end
 
