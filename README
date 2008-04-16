@@ -1,13 +1,57 @@
-ActiverecordSymbolize
-=====================
+= Symbolize attribute values in ActiveRecord (e.g. for nicer enums)
 
-Introduction goes here.
+This plugin introduces an easy way to use symbols for values of ActiveRecord
+attributes. Symbolized attributes return a ruby symbol (or nil) as their value
+and can be set using symbols.
 
+== About
 
-Example
-=======
+Since ActiveRecord does not natively support database column types of ENUM or
+SET, you'll usually use a string attribute and restrict it to certain values
+with validations. Using this plugin, the values of such pseudo-enums are
+symbols, which look more ruby-style than strings.
 
-Example goes here.
+Simply add "symbolize :attr_name" to your model class, and the specified
+attribute will return symbol values and can be set using smbols (setting
+string values will still work, which is important when using forms).
+
+An attribute to symbolize should be a string (varchar) column in the database.
+
+Blog: http://zargony.com/
+Github: http://github.com/zargony/activerecord_symbolize
+
+== Install
+
+  ./script/plugin install git://github.com/zargony/activerecord_symbolize.git
+
+== Usage
+
+Add "symbolize :attr_name" to your model class. You may also want to add
+validates_inclusion_of to restrict the possible values (just like an enum).
+
+  class User < ActiveRecord::Base
+    symbolize :gender
+    validates_inclusion_of :gender, :in => [:female, :male]
+  end
+
+== Examples
+
+  u = User.find_by_name('Anna')   # => #<User Anna>
+  u.gender                        # => :female
+  
+  u = User.find_by_gender(:male)  # => #<User Bob>
+  u.gender                        # => :male
+  
+  u = User.find(:all, :conditions => { :gender => :female })
+  
+  u = User.new(:name => 'ET', :gender => :unknown)
+  u.save                          # => validation fails
+
+== Notes
+
+I've been using this for quite some time and made it a rails plugin now. More
+background iinformation can be found at
+http://zargony.com/2007/09/07/symbolize-attribute-values-in-activerecord
 
 
 Copyright (c) 2007-2008 Andreas Neuhaus, released under the MIT license
