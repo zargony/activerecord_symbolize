@@ -34,7 +34,7 @@ module Symbolize
 
   # Write a symbolized value
   def write_symbolized_attribute (attr_name, value)
-    write_attribute(attr_name, (value.to_sym && value.to_sym.to_s rescue nil))
+    write_attribute(attr_name, (value.to_sym.to_s rescue nil))
   end
 end
 
