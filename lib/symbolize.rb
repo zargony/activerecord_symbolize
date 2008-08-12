@@ -53,8 +53,8 @@ end
 #       value and therefore does not support singleton methods.
 class Symbol
   def quoted_id
-    # Since symbols always contain save characters (no backslash or apostrophe), it's
-    # save to skip calling ActiveRecord::ConnectionAdapters::Quoting#quote_string here
-    "'#{self.to_s}'"
+    # A symbol can contain almost every character (even a backslash or an
+    # apostrophe), so make sure to properly quote the string value here.
+    "'#{ActiveRecord::Base.connection.quote_string(self.to_s)}'"
   end
 end

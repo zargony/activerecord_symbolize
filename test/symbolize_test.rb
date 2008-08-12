@@ -1,7 +1,7 @@
 PLUGIN_ROOT = File.dirname(__FILE__) + '/..'
-RAILS_ROOT = PLUGIN_ROOT + '/../../..'
+RAILS_ROOT = PLUGIN_ROOT + '/../../rails'
 
-require RAILS_ROOT + '/vendor/rails/activerecord/lib/active_record'
+require RAILS_ROOT + '/activerecord/lib/active_record'
 require PLUGIN_ROOT + '/lib/symbolize'
 require PLUGIN_ROOT + '/init'
 
@@ -81,6 +81,13 @@ class SymbolizeTest < Test::Unit::TestCase
   def test_symbols_quoted_id
     @user.status = :active
     assert_equal "'active'", @user.status.quoted_id
+  end
+
+  def test_symbols_with_weird_chars_quoted_id
+    @user.status = :"weird'; chars"
+    assert_equal "weird'; chars", @user.status_before_type_cast
+    assert_equal "weird'; chars", @user.read_attribute(:status)
+    assert_equal "'weird''; chars'", @user.status.quoted_id
   end
 
   # Test finders
