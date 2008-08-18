@@ -13,7 +13,9 @@ ActiveRecord::Base.connection.execute("
   CREATE TABLE 'users' (
     'id' INTEGER PRIMARY KEY NOT NULL,
     'name' VARCHAR(255) NOT NULL,
-    'status' VARCHAR(255) NOT NULL
+    'other' VARCHAR(255) NOT NULL,
+    'status' VARCHAR(255) NOT NULL,
+    'so' VARCHAR(255) NOT NULL
   );")
 
 # Make with_scope public-usable for testing
@@ -23,12 +25,18 @@ end
 
 # Test model
 class User < ActiveRecord::Base
-  symbolize :status
+  symbolize :other
+  symbolize :status , :in => [:active, :inactive]
+  symbolize :so, :allow_blank => true, :in => {
+    :linux => 'Linux',
+    :win   => 'Windows',
+    :mac   => 'Mac OS X'
+  }
 end
 
 # Test records
-User.create(:name => 'Anna', :status => :active)
-User.create(:name => 'Bob', :status => :inactive)
+User.create(:name => 'Anna', :other => :fo, :status => :active  , :so => :linux)
+User.create(:name => 'Bob' , :other => :bar,:status => :inactive, :so => :mac)
 
 class SymbolizeTest < Test::Unit::TestCase
   def setup
@@ -40,33 +48,65 @@ class SymbolizeTest < Test::Unit::TestCase
   end
 
   # Test attribute setter and getter
-
   def test_symbolize_nil
     @user.status = nil
     assert_nil @user.status
     assert_nil @user.status_before_type_cast
     assert_nil @user.read_attribute(:status)
   end
-
+  
   def test_symbolize_blank
     @user.status = ''
     assert_nil @user.status
     assert_nil @user.status_before_type_cast
     assert_nil @user.read_attribute(:status)
   end
-
+  
+  def test_other_validates 
+    @user.other = nil
+    assert @user.valid?
+    @user.other = ''
+    assert @user.valid?
+  end
+  
+  def test_status_validates
+    @user.status = nil
+    assert !@user.valid?
+    assert @user.errors.on(:status)
+    @user.status = ''
+    assert !@user.valid?
+    assert @user.errors.on(:status)
+    @user.status = :not_valid
+    assert !@user.valid?
+    assert @user.errors.on(:status)
+    @user.status = :active
+    assert @user.valid?
+  end
+  
+  def test_so_validates
+    @user.so = nil
+    assert @user.valid?
+    @user.so = ''
+    assert @user.valid?    
+  end
+  
+  def test_get_values 
+    assert_equal({ :active => 'Active', :inactive => 'Inactive' }, User.get_status_values)
+    assert_equal({ :win => "Windows", :mac => "Mac OS X", :linux => "Linux"}, User.get_so_values)
+  end
+    
   def test_symbolize_symbol
-    @user.status = :testing
-    assert_equal :testing, @user.status
-    assert_equal 'testing', @user.status_before_type_cast
-    assert_equal 'testing', @user.read_attribute(:status)
+    @user.status = :active
+    assert_equal :active,  @user.status
+    assert_equal 'active', @user.status_before_type_cast
+    assert_equal 'active', @user.read_attribute(:status)
   end
 
   def test_symbolize_string
-    @user.status = 'testing'
-    assert_equal :testing, @user.status
-    assert_equal 'testing', @user.status_before_type_cast
-    assert_equal 'testing', @user.read_attribute(:status)
+    @user.status = 'inactive'
+    assert_equal :inactive,  @user.status
+    assert_equal 'inactive', @user.status_before_type_cast
+    assert_equal 'inactive', @user.read_attribute(:status)
   end
 
   def test_symbolize_number
@@ -107,3 +147,4 @@ class SymbolizeTest < Test::Unit::TestCase
 
   # TODO: Test if existing ActiveRecord tests won't break by running them with Symbolize loaded
 end
+

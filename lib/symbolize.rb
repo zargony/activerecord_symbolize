@@ -12,13 +12,34 @@ module Symbolize
   #
   # Example:
   #   class User < ActiveRecord::Base
-  #     symbolize :gender
-  #     validates_inclusion_of :gender, :in => [:female, :male]
+  #     symbolize :gender, :in => [:female, :male]
   #   end
   module ClassMethods
     # Specifies that values of the given attributes should be returned
     # as symbols. The table column should be created of type string.
     def symbolize (*attr_names)
+      configuration = {}
+      configuration.update(attr_names.extract_options!)
+      
+      enum = configuration[:in] || configuration[:within]
+      
+      unless enum.nil?
+        if enum.class == Hash
+          values = enum
+          enum   = enum.map { |key,value| key } 
+        else
+          values = Hash[*enum.collect { |v| [v, v.to_s.capitalize] }.flatten]
+        end
+
+        attr_names.each do |attr_name|
+          attr_name = attr_name.to_s
+          class_eval("#{attr_name.upcase}_VALUES = values")
+          class_eval("def self.get_#{attr_name}_values; #{attr_name.upcase}_VALUES; end")
+        end
+        
+        class_eval("validates_inclusion_of :#{attr_names.join(', :')}, configuration")
+      end
+
       attr_names.each do |attr_name|
         attr_name = attr_name.to_s
         class_eval("def #{attr_name}; read_and_symbolize_attribute('#{attr_name}'); end")
