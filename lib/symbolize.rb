@@ -30,7 +30,7 @@ module Symbolize
         else
           values = Hash[*enum.collect { |v| [v, v.to_s.capitalize] }.flatten]
         end
-
+        
         attr_names.each do |attr_name|
           attr_name = attr_name.to_s
           class_eval("#{attr_name.upcase}_VALUES = values")

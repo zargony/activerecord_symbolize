@@ -1,7 +1,9 @@
 PLUGIN_ROOT = File.dirname(__FILE__) + '/..'
 RAILS_ROOT = PLUGIN_ROOT + '/../../rails'
 
-require RAILS_ROOT + '/activerecord/lib/active_record'
+require RAILS_ROOT  + '/activerecord/lib/active_record'
+require RAILS_ROOT  + '/actionpack/lib/action_controller'
+require RAILS_ROOT  + '/actionpack/lib/action_view'
 require PLUGIN_ROOT + '/lib/symbolize'
 require PLUGIN_ROOT + '/init'
 
@@ -28,9 +30,9 @@ class User < ActiveRecord::Base
   symbolize :other
   symbolize :status , :in => [:active, :inactive]
   symbolize :so, :allow_blank => true, :in => {
-    :linux => 'Linux',
+    :mac   => 'Mac OS X',
     :win   => 'Windows',
-    :mac   => 'Mac OS X'
+    :linux => 'Linux',
   }
 end
 
@@ -39,12 +41,28 @@ User.create(:name => 'Anna', :other => :fo, :status => :active  , :so => :linux)
 User.create(:name => 'Bob' , :other => :bar,:status => :inactive, :so => :mac)
 
 class SymbolizeTest < Test::Unit::TestCase
+  include ActionView::Helpers::FormHelper
+
   def setup
     @user = User.find(:first)
   end
 
   def test_plugin_loaded
     assert ActiveRecord::Base.respond_to?(:symbolize)
+  end
+  
+  def test_select_sym
+    output = select_sym("user", "status", nil)
+    assert_equal("<select id=\"user_status\" name=\"user[status]\"><option value=\"active\" selected=\"selected\">Active</option>\n<option value=\"inactive\">Inactive</option></select>", output)
+    
+    @user.status = :inactive
+    output = select_sym("user", "status", nil)
+    assert_equal("<select id=\"user_status\" name=\"user[status]\"><option value=\"active\">Active</option>\n<option value=\"inactive\" selected=\"selected\">Inactive</option></select>", output)
+  end
+  
+  def test_radio_sym
+    output = radio_sym("user", "status", nil)
+    assert_equal("<label>Active: <input checked=\"checked\" id=\"user_status_active\" name=\"user[status]\" type=\"radio\" value=\"active\" /></label><label>Inactive: <input id=\"user_status_inactive\" name=\"user[status]\" type=\"radio\" value=\"inactive\" /></label>", output)
   end
 
   # Test attribute setter and getter
