@@ -30,8 +30,12 @@ Add "symbolize :attr_name" to your model class. You may also want to add
 validates_inclusion_of to restrict the possible values (just like an enum).
 
   class User < ActiveRecord::Base
-    symbolize :gender
-    validates_inclusion_of :gender, :in => [:female, :male]
+    symbolize :gender, :in => [:female, :male]
+    symbolize :so, :in => {
+      :windows => "Windows XP",
+      :linux   => "Linux",
+      :mac     => "Mac OS X"
+    }
   end
 
 == Examples
@@ -46,6 +50,26 @@ validates_inclusion_of to restrict the possible values (just like an enum).
   
   u = User.new(:name => 'ET', :gender => :unknown)
   u.save                          # => validation fails
+  
+== Examples Helpers
+
+  <% form_for @user do |f| %>
+    <%= f.radio_sym "gender" %>
+    <%= f.select_sym "so" %>
+  <% end %>
+  
+  output:
+  
+  <form action="users/1" method="post">
+    <div style="margin:0;padding:0">...</div>
+    <label>Female <input id="user_gender_female" name="user[gender]" type="radio" value="female"></label>
+    <label>Male <input checked="checked" id="user_gender_male" name="user[gender]" type="radio" value="male" ></label>    
+    <select id="user_so" name="post[so]">
+      <option value="windows">Windows XP</option>
+      <option value="linux" selected="selected">Linux</option>
+      <option value="mac" selected="selected">Mac OS X</option>
+    </select>
+  </form>
 
 == Notes
 
