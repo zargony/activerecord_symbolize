@@ -26,12 +26,11 @@ Github: http://github.com/zargony/activerecord_symbolize
 
 == Usage
 
-Add "symbolize :attr_name" to your model class. You may also want to add
-validates_inclusion_of to restrict the possible values (just like an enum).
+Add "symbolize :attr_name" to your model class. An attribute validation
+(like validates_inclusion_of) can be added by using the :in option.
 
   class User < ActiveRecord::Base
-    symbolize :gender
-    validates_inclusion_of :gender, :in => [:female, :male]
+    symbolize :gender, :in => [:female, :male]
   end
 
 == Examples
@@ -50,7 +49,7 @@ validates_inclusion_of to restrict the possible values (just like an enum).
 == Notes
 
 I've been using this for quite some time and made it a rails plugin now. More
-background iinformation can be found at
+background information can be found at
 http://zargony.com/2007/09/07/symbolize-attribute-values-in-activerecord
 
 
