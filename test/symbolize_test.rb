@@ -166,7 +166,11 @@ class SymbolizeTest < Test::Unit::TestCase
   # Test humazine
   def test_symbolize_humanize
     assert_equal 'Active', @user.status_humanize
+    
     assert_equal 'Linux' , @user.so_humanize
+    @user.so = :mac
+    assert_equal "Mac OS X", @user.so_humanize
+
     assert_equal 'Fo'    , @user.other_humanize
     @user.other = :foooo
     assert_equal 'Foooo', @user.other_humanize
