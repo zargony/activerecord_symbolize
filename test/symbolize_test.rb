@@ -163,6 +163,15 @@ class SymbolizeTest < Test::Unit::TestCase
     end
   end
 
+  # Test humazine
+  def test_symbolize_humanize
+    assert_equal 'Active', @user.status_humanize
+    assert_equal 'Linux' , @user.so_humanize
+    assert_equal 'Fo'    , @user.other_humanize
+    @user.other = :foooo
+    assert_equal 'Foooo', @user.other_humanize
+  end
+
   # TODO: Test if existing ActiveRecord tests won't break by running them with Symbolize loaded
 end
 

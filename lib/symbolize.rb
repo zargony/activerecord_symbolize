@@ -44,6 +44,11 @@ module Symbolize
         attr_name = attr_name.to_s
         class_eval("def #{attr_name}; read_and_symbolize_attribute('#{attr_name}'); end")
         class_eval("def #{attr_name}= (value); write_symbolized_attribute('#{attr_name}', value); end")
+        if values.nil?
+          class_eval("def #{attr_name}_humanize; #{attr_name}.to_s.capitalize; end")
+        else
+          class_eval("def #{attr_name}_humanize; #{attr_name.upcase}_VALUES[#{attr_name}]; end")
+        end
       end
     end
   end
