@@ -32,18 +32,27 @@ class User < ActiveRecord::Base
   symbolize :so, :allow_blank => true, :in => {
     :mac   => 'Mac OS X',
     :win   => 'Windows',
-    :linux => 'Linux',
+    :linux => 'Linux'
   }
+  symbolize :office, :allow_blank => true, :in => [
+    [:kde , 'Koffice'],
+    [:ms  , 'Microsoft Office'],
+    [:open, 'Open Office']
+  ]
 end
 
 # Test records
-User.create(:name => 'Anna', :other => :fo, :status => :active  , :so => :linux)
-User.create(:name => 'Bob' , :other => :bar,:status => :inactive, :so => :mac)
+User.create(:name => 'Anna', :other => :fo, :status => :active  , :so => :linux, :office => :ms)
+User.create(:name => 'Bob' , :other => :bar,:status => :inactive, :so => :mac, :office => :kde)
 
 class SymbolizeTest < Test::Unit::TestCase
   include ActionView::Helpers::FormHelper
+  include ActionView::Helpers::FormOptionsHelper
 
   def setup
+    @options_status = [['Active', :active], ['Inactive', :inactive]]
+    @options_office = [["Koffice", :kde]  , ["Microsoft Office", :ms], ["Open Office", :open]]
+    @options_so     = [["Linux", :linux]  , ["Mac OS X", :mac], ["Windows", :win]]
     @user = User.find(:first)
   end
 
@@ -51,20 +60,6 @@ class SymbolizeTest < Test::Unit::TestCase
     assert ActiveRecord::Base.respond_to?(:symbolize)
   end
   
-  def test_select_sym
-    output = select_sym("user", "status", nil)
-    assert_equal("<select id=\"user_status\" name=\"user[status]\"><option value=\"active\" selected=\"selected\">Active</option>\n<option value=\"inactive\">Inactive</option></select>", output)
-    
-    @user.status = :inactive
-    output = select_sym("user", "status", nil)
-    assert_equal("<select id=\"user_status\" name=\"user[status]\"><option value=\"active\">Active</option>\n<option value=\"inactive\" selected=\"selected\">Inactive</option></select>", output)
-  end
-  
-  def test_radio_sym
-    output = radio_sym("user", "status", nil)
-    assert_equal("<label>Active: <input checked=\"checked\" id=\"user_status_active\" name=\"user[status]\" type=\"radio\" value=\"active\" /></label><label>Inactive: <input id=\"user_status_inactive\" name=\"user[status]\" type=\"radio\" value=\"inactive\" /></label>", output)
-  end
-
   # Test attribute setter and getter
   def test_symbolize_nil
     @user.status = nil
@@ -174,6 +169,28 @@ class SymbolizeTest < Test::Unit::TestCase
     assert_equal 'Fo'    , @user.other_humanize
     @user.other = :foooo
     assert_equal 'Foooo', @user.other_humanize
+  end
+
+  def test_helper_select_sym
+    output = "<select id=\"user_status\" name=\"user[status]\">#{options_for_select(@options_status, @user.status)}</select>"
+    assert_equal(output, select_sym("user", "status", nil))
+    
+    @user.status = :inactive
+    output = "<select id=\"user_status\" name=\"user[status]\">#{options_for_select(@options_status, @user.status)}</select>"
+    assert_equal(output, select_sym("user", "status", nil))
+  end
+  
+  def test_helper_select_sym_order
+    output_so     = "<select id=\"user_so\" name=\"user[so]\">#{options_for_select(@options_so, @user.so)}</select>"
+    output_office = "<select id=\"user_office\" name=\"user[office]\">#{options_for_select(@options_office, @user.office)}</select>"
+
+    assert_equal output_so, select_sym("user", "so", nil)
+    assert_equal output_office, select_sym("user", "office", nil)
+  end
+
+  def test_helper_radio_sym
+    output = radio_sym("user", "status", nil)
+    assert_equal("<label>Active: <input checked=\"checked\" id=\"user_status_active\" name=\"user[status]\" type=\"radio\" value=\"active\" /></label><label>Inactive: <input id=\"user_status_inactive\" name=\"user[status]\" type=\"radio\" value=\"inactive\" /></label>", output)
   end
 
   # TODO: Test if existing ActiveRecord tests won't break by running them with Symbolize loaded
