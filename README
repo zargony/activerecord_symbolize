@@ -36,6 +36,11 @@ validates_inclusion_of to restrict the possible values (just like an enum).
       :linux   => "Linux",
       :mac     => "Mac OS X"
     }
+    symbolize :office, :allow_blank => true, :in => [
+      [:kde , 'Koffice'],
+      [:ms  , 'Microsoft Office'],
+      [:open, 'Open Office']
+    ]
   end
 
 == Examples
@@ -55,7 +60,10 @@ validates_inclusion_of to restrict the possible values (just like an enum).
 
   <% form_for @user do |f| %>
     <%= f.radio_sym "gender" %>
+    <!-- Alphabetic order -->
     <%= f.select_sym "so" %>
+    <!-- Fixed order -->
+    <%= f.select_sym "office" %>
   <% end %>
   
   output:
@@ -64,13 +72,19 @@ validates_inclusion_of to restrict the possible values (just like an enum).
     <div style="margin:0;padding:0">...</div>
     <label>Female <input id="user_gender_female" name="user[gender]" type="radio" value="female"></label>
     <label>Male <input checked="checked" id="user_gender_male" name="user[gender]" type="radio" value="male" ></label>    
+    <!-- Alphabetic order -->
     <select id="user_so" name="post[so]">
-      <option value="windows">Windows XP</option>
       <option value="linux" selected="selected">Linux</option>
-      <option value="mac" selected="selected">Mac OS X</option>
+      <option value="mac">Mac OS X</option>
+      <option value="windows">Windows XP</option>
+    </select>
+    <!-- Fixed order -->
+    <select id="user_office" name="post[office]">
+      <option value="kde" selected="selected">Koffice</option>
+      <option value="ms">Microsoft Office</option>
+      <option value="open">Open Office</option>
     </select>
   </form>
-
 == Notes
 
 I've been using this for quite some time and made it a rails plugin now. More
