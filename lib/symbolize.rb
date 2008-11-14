@@ -21,20 +21,26 @@ module Symbolize
       configuration = {}
       configuration.update(attr_names.extract_options!)
       
-      enum = configuration[:in] || configuration[:within]
+      enum   = configuration[:in]
       
       unless enum.nil?
         if enum.class == Hash
           values = enum
-          enum   = enum.map { |key,value| key } 
+          enum   = enum.map { |key,value| [value, key] }
+          enum.sort! { |a, b| a[0] <=> b[0] }
         else
-          values = Hash[*enum.collect { |v| [v, v.to_s.capitalize] }.flatten]
+          enum.map! { |v| v.class == Array ? [v[0], v[1]] : [v, v.to_s.capitalize] }
+          values = Hash[*enum.flatten]
+          configuration[:in] = enum.map { |v| v.class == Array ? v[0] : v }
+          enum.map! { |v| [v[1], v[0]] }
         end
         
         attr_names.each do |attr_name|
           attr_name = attr_name.to_s
-          class_eval("#{attr_name.upcase}_VALUES = values")
+          class_eval("#{attr_name.upcase}_VALUES  = values")
           class_eval("def self.get_#{attr_name}_values; #{attr_name.upcase}_VALUES; end")
+          class_eval("#{attr_name.upcase}_OPTIONS = enum")
+          class_eval("def self.get_#{attr_name}_options; #{attr_name.upcase}_OPTIONS; end")
         end
         
         class_eval("validates_inclusion_of :#{attr_names.join(', :')}, configuration")

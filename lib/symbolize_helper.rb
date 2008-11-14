@@ -52,11 +52,7 @@ module ActionView
       end
       
       def symbolize_values(choices)
-        if choices.nil?
-          choices = object.class.send("get_#{@method_name}_values").
-            map { |key, value| [value, key] }
-        end
-        choices
+        choices.nil? ? object.class.send("get_#{@method_name}_options") : choices
       end
     end
   end
