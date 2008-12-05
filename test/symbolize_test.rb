@@ -1,24 +1,16 @@
-PLUGIN_ROOT = File.dirname(__FILE__) + '/..'
-RAILS_ROOT = PLUGIN_ROOT + '/../../rails'
-
-require RAILS_ROOT  + '/activerecord/lib/active_record'
-require RAILS_ROOT  + '/actionpack/lib/action_controller'
-require RAILS_ROOT  + '/actionpack/lib/action_view'
-require PLUGIN_ROOT + '/lib/symbolize'
-require PLUGIN_ROOT + '/init'
-
+require 'rubygems'
 require 'test/unit'
+require 'active_record'
+require 'action_controller'
+require 'action_view'
+require File.dirname(__FILE__) + "/../lib/symbolize"
+require File.dirname(__FILE__) + "/../init"
 
 # Establish a temporary sqlite3 db for testing
 ActiveRecord::Base.establish_connection(:adapter => 'sqlite3', :database => ':memory:')
-ActiveRecord::Base.connection.execute("
-  CREATE TABLE 'users' (
-    'id' INTEGER PRIMARY KEY NOT NULL,
-    'name' VARCHAR(255) NOT NULL,
-    'other' VARCHAR(255) NOT NULL,
-    'status' VARCHAR(255) NOT NULL,
-    'so' VARCHAR(255) NOT NULL
-  );")
+require File.dirname(__FILE__) + "/db/create_testing_structure"
+
+CreateTestingStructure.migrate(:up)
 
 # Make with_scope public-usable for testing
 class << ActiveRecord::Base
@@ -59,7 +51,7 @@ class SymbolizeTest < Test::Unit::TestCase
   def test_plugin_loaded
     assert ActiveRecord::Base.respond_to?(:symbolize)
   end
-  
+
   # Test attribute setter and getter
   def test_symbolize_nil
     @user.status = nil
@@ -67,21 +59,21 @@ class SymbolizeTest < Test::Unit::TestCase
     assert_nil @user.status_before_type_cast
     assert_nil @user.read_attribute(:status)
   end
-  
+
   def test_symbolize_blank
     @user.status = ''
     assert_nil @user.status
     assert_nil @user.status_before_type_cast
     assert_nil @user.read_attribute(:status)
   end
-  
-  def test_other_validates 
+
+  def test_other_validates
     @user.other = nil
     assert @user.valid?
     @user.other = ''
     assert @user.valid?
   end
-  
+
   def test_status_validates
     @user.status = nil
     assert !@user.valid?
@@ -95,19 +87,19 @@ class SymbolizeTest < Test::Unit::TestCase
     @user.status = :active
     assert @user.valid?
   end
-  
+
   def test_so_validates
     @user.so = nil
     assert @user.valid?
     @user.so = ''
-    assert @user.valid?    
+    assert @user.valid?
   end
-  
-  def test_get_values 
+
+  def test_get_values
     assert_equal({ :active => 'Active', :inactive => 'Inactive' }, User.get_status_values)
     assert_equal({ :win => "Windows", :mac => "Mac OS X", :linux => "Linux"}, User.get_so_values)
   end
-    
+
   def test_symbolize_symbol
     @user.status = :active
     assert_equal :active,  @user.status
@@ -161,7 +153,7 @@ class SymbolizeTest < Test::Unit::TestCase
   # Test humazine
   def test_symbolize_humanize
     assert_equal 'Active', @user.status_humanize
-    
+
     assert_equal 'Linux' , @user.so_humanize
     @user.so = :mac
     assert_equal "Mac OS X", @user.so_humanize
@@ -174,12 +166,12 @@ class SymbolizeTest < Test::Unit::TestCase
   def test_helper_select_sym
     output = "<select id=\"user_status\" name=\"user[status]\">#{options_for_select(@options_status, @user.status)}</select>"
     assert_equal(output, select_sym("user", "status", nil))
-    
+
     @user.status = :inactive
     output = "<select id=\"user_status\" name=\"user[status]\">#{options_for_select(@options_status, @user.status)}</select>"
     assert_equal(output, select_sym("user", "status", nil))
   end
-  
+
   def test_helper_select_sym_order
     output_so     = "<select id=\"user_so\" name=\"user[so]\">#{options_for_select(@options_so, @user.so)}</select>"
     output_office = "<select id=\"user_office\" name=\"user[office]\">#{options_for_select(@options_office, @user.office)}</select>"
@@ -195,4 +187,3 @@ class SymbolizeTest < Test::Unit::TestCase
 
   # TODO: Test if existing ActiveRecord tests won't break by running them with Symbolize loaded
 end
-
