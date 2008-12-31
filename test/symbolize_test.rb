@@ -1,9 +1,9 @@
-PLUGIN_ROOT = File.dirname(__FILE__) + '/..'
-RAILS_ROOT = PLUGIN_ROOT + '/../../rails'
+PLUGIN_ROOT = File.join(File.dirname(__FILE__), '..')
 
-require RAILS_ROOT + '/activerecord/lib/active_record'
-require PLUGIN_ROOT + '/lib/symbolize'
-require PLUGIN_ROOT + '/init'
+require 'rubygems'
+require 'active_record'
+require File.join(PLUGIN_ROOT, 'lib', 'symbolize')
+require File.join(PLUGIN_ROOT, 'init')
 
 require 'test/unit'
 
