@@ -4,6 +4,7 @@ This plugin introduces an easy way to use symbols for values of ActiveRecord
 attributes. Symbolized attributes return a ruby symbol (or nil) as their value
 and can be set using symbols.
 
+
 == About
 
 Since ActiveRecord does not natively support database column types of ENUM or
@@ -20,9 +21,11 @@ An attribute to symbolize should be a string (varchar) column in the database.
 Blog: http://zargony.com/
 Github: http://github.com/zargony/activerecord_symbolize
 
+
 == Install
 
-  ./script/plugin install git://github.com/zargony/activerecord_symbolize.git
+  ./script/plugin install git://github.com/nofxx/activerecord_symbolize.git
+
 
 == Usage
 
@@ -32,30 +35,60 @@ validates_inclusion_of to restrict the possible values (just like an enum).
   class User < ActiveRecord::Base
     symbolize :gender, :in => [:female, :male]
     symbolize :so, :in => {
-      :windows => "Windows XP",
       :linux   => "Linux",
       :mac     => "Mac OS X"
     }
-    symbolize :office, :allow_blank => true, :in => [
-      [:kde , 'Koffice'],
-      [:ms  , 'Microsoft Office'],
-      [:open, 'Open Office']
-    ]
+    symbolize :gui, , :in => [:gnome, :kde, :xfce], :allow_blank => true
+    symbolize :browser, :in => [:firefox, :opera], :i18n => false
   end
+
+
+== i18n
+
+If you don`t provide a hash with values, it will try i18n:
+
+    activerecord:
+      attributes:
+        user:
+          enums:
+            gui:
+              gnome: Gnome Desktop Enviroment
+              kde: K Desktop Enviroment
+              xfce: XFCE4
+            gender:
+              female: Girl
+              male: Boy
+
+You can skip i18n lookup with :i18n => false
+  symbolize :gender, :in => [:female, :male], :i18n => false
+
+
+== Booleans
+
+Its possible to use boolean fields also.
+  symbolize :switch, :in => [true, false]
+
+  ...
+    switch:
+      "true": On
+      "false": Off
+      "nil": Unknown
+
 
 == Examples
 
   u = User.find_by_name('Anna')   # => #<User Anna>
   u.gender                        # => :female
-  
+
   u = User.find_by_gender(:male)  # => #<User Bob>
   u.gender                        # => :male
-  
+
   u = User.find(:all, :conditions => { :gender => :female })
-  
+
   u = User.new(:name => 'ET', :gender => :unknown)
   u.save                          # => validation fails
-  
+
+
 == Examples Helpers
 
   <% form_for @user do |f| %>
@@ -65,13 +98,13 @@ validates_inclusion_of to restrict the possible values (just like an enum).
     <!-- Fixed order -->
     <%= f.select_sym "office" %>
   <% end %>
-  
+
   output:
-  
+
   <form action="users/1" method="post">
     <div style="margin:0;padding:0">...</div>
     <label>Female <input id="user_gender_female" name="user[gender]" type="radio" value="female"></label>
-    <label>Male <input checked="checked" id="user_gender_male" name="user[gender]" type="radio" value="male" ></label>    
+    <label>Male <input checked="checked" id="user_gender_male" name="user[gender]" type="radio" value="male" ></label>
     <!-- Alphabetic order -->
     <select id="user_so" name="post[so]">
       <option value="linux" selected="selected">Linux</option>
@@ -85,8 +118,19 @@ validates_inclusion_of to restrict the possible values (just like an enum).
       <option value="open">Open Office</option>
     </select>
   </form>
+
+
 == Notes
 
+This fork:
+http://github.com/nofxx/activerecord_symbolize
+
+
+Forked from:
+http://github.com/nuxlli/activerecord_symbolize
+
+
+Initial work:
 I've been using this for quite some time and made it a rails plugin now. More
 background iinformation can be found at
 http://zargony.com/2007/09/07/symbolize-attribute-values-in-activerecord

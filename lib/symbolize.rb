@@ -3,6 +3,11 @@ module Symbolize
     base.extend(ClassMethods)
   end
 
+   # Return an attribute's i18n
+  def read_i18nte attr_name
+    I18n.translate("activerecord.attributes.#{self.class.to_s.downcase}.enums.#{attr_name}.#{read_attribute(attr_name)}") #.to_sym rescue nil
+  end
+
   # Symbolize ActiveRecord attributes. Add
   #   symbolize :attr_name
   # to your model class, to make an attribute return symbols instead of
@@ -13,60 +18,99 @@ module Symbolize
   # Example:
   #   class User < ActiveRecord::Base
   #     symbolize :gender, :in => [:female, :male]
+  #     symbolize :so, :in => {
+  #       :linux   => "Linux",
+  #       :mac     => "Mac OS X"
+  #     }
+  #     symbolize :gui, , :in => [:gnome, :kde, :xfce], :allow_blank => true
+  #     symbolize :browser, :in => [:firefox, :opera], :i18n => false
   #   end
+  #
+  # It will automattically lookup for i18n:
+  #
+  # activerecord:
+  #   attributes:
+  #     user:
+  #       enums:
+  #         gender:
+  #           female: Girl
+  #           male: Boy
+  #
+  # You can skip i18n lookup with :i18n => false
+  #   symbolize :gender, :in => [:female, :male], :i18n => false
+  #
+  # Its possible to use boolean fields also.
+  #   symbolize :switch, :in => [true, false]
+  #
+  #   ...
+  #     switch:
+  #       "true": On
+  #       "false": Off
+  #       "nil": Unknown
+  #
   module ClassMethods
     # Specifies that values of the given attributes should be returned
     # as symbols. The table column should be created of type string.
     def symbolize (*attr_names)
       configuration = {}
       configuration.update(attr_names.extract_options!)
-      
-      enum   = configuration[:in]
-      
+
+      enum = configuration[:in] || configuration[:within]
+      i18n = configuration[:i18n].nil? ? true : configuration[:i18n]
+
       unless enum.nil?
-        if enum.class == Hash
-          values = enum
-          enum   = enum.map { |key,value| [value, key] }
-          enum.sort! { |a, b| a[0] <=> b[0] }
-        else
-          enum.map! { |v| v.class == Array ? [v[0], v[1]] : [v, v.to_s.capitalize] }
-          values = Hash[*enum.flatten]
-          configuration[:in] = enum.map { |v| v.class == Array ? v[0] : v }
-          enum.map! { |v| [v[1], v[0]] }
-        end
-        
         attr_names.each do |attr_name|
           attr_name = attr_name.to_s
-          class_eval("#{attr_name.upcase}_VALUES  = values")
-          class_eval("def self.get_#{attr_name}_values; #{attr_name.upcase}_VALUES; end")
-          class_eval("#{attr_name.upcase}_OPTIONS = enum")
-          class_eval("def self.get_#{attr_name}_options; #{attr_name.upcase}_OPTIONS; end")
+          if i18n && enum.class != Hash
+            values = Hash[*enum.map { |v| [v, I18n.translate("activerecord.attributes.#{self.to_s.downcase}.enums.#{attr_name}.#{v}")] }.flatten]
+          elsif enum.class == Hash
+            values = enum
+            enum   = enum.map { |key,value| [value, key] }
+            enum.sort! { |a, b| a[0] <=> b[0] }
+          else
+            values = Hash[*enum.collect { |v| [v, v.to_s.capitalize] }.flatten]
+          end
+          class_eval("#{attr_name.upcase}_VALUES = values")
+          class_eval("def self.get_#{attr_name}_values; #{attr_name.upcase}_VALUES.map(&:reverse); end")
         end
-        
+
         class_eval("validates_inclusion_of :#{attr_names.join(', :')}, configuration")
       end
 
       attr_names.each do |attr_name|
         attr_name = attr_name.to_s
         class_eval("def #{attr_name}; read_and_symbolize_attribute('#{attr_name}'); end")
+        class_eval("def #{attr_name}_text; read_i18n_attribute('#{attr_name}'); end") if i18n
         class_eval("def #{attr_name}= (value); write_symbolized_attribute('#{attr_name}', value); end")
-        if values.nil?
-          class_eval("def #{attr_name}_humanize; #{attr_name}.to_s.capitalize; end")
-        else
-          class_eval("def #{attr_name}_humanize; #{attr_name.upcase}_VALUES[#{attr_name}]; end")
-        end
       end
     end
   end
 
+  # String becomes symbol, booleans string and nil nil.
+  def symbolize_attribute attr
+    case attr
+      when String then attr.to_sym
+      when Symbol, TrueClass, FalseClass then attr
+      else nil
+    end
+  end
+
   # Return an attribute's value as a symbol or nil
-  def read_and_symbolize_attribute (attr_name)
-    read_attribute(attr_name).to_sym rescue nil
+  def read_and_symbolize_attribute attr_name
+    symbolize_attribute read_attribute(attr_name)
+  end
+
+  # Return an attribute's i18n
+  def read_i18n_attribute attr_name
+    I18n.translate("activerecord.attributes.#{self.class.to_s.downcase}.enums.#{attr_name}.#{read_attribute(attr_name)}") #.to_sym rescue nila
   end
 
   # Write a symbolized value
-  def write_symbolized_attribute (attr_name, value)
-    write_attribute(attr_name, (value.to_sym && value.to_sym.to_s rescue nil))
+  # Watch out for booleans.
+  def write_symbolized_attribute attr_name, value
+    val = { "true" => true, "false" => false }[value]
+    val = symbolize_attribute(value) if val.nil?
+    write_attribute(attr_name, val)
   end
 end
 
