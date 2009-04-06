@@ -3,11 +3,6 @@ module Symbolize
     base.extend(ClassMethods)
   end
 
-   # Return an attribute's i18n
-  def read_i18nte attr_name
-    I18n.translate("activerecord.attributes.#{self.class.to_s.downcase}.enums.#{attr_name}.#{read_attribute(attr_name)}") #.to_sym rescue nil
-  end
-
   # Symbolize ActiveRecord attributes. Add
   #   symbolize :attr_name
   # to your model class, to make an attribute return symbols instead of
