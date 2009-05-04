@@ -1,5 +1,5 @@
 module Symbolize
-  def self.included (base)
+  def self.included base
     base.extend(ClassMethods)
   end
 
@@ -46,37 +46,47 @@ module Symbolize
   module ClassMethods
     # Specifies that values of the given attributes should be returned
     # as symbols. The table column should be created of type string.
-    def symbolize (*attr_names)
+    def symbolize *attr_names
       configuration = {}
       configuration.update(attr_names.extract_options!)
 
       enum = configuration[:in] || configuration[:within]
-      i18n = configuration[:i18n].nil? ? true : configuration[:i18n]
+      i18n = configuration[:i18n].nil? && !enum.instance_of?(Hash) && enum ? true : configuration[:i18n]
 
       unless enum.nil?
+
         attr_names.each do |attr_name|
           attr_name = attr_name.to_s
-          if i18n && enum.class != Hash
-            values = Hash[*enum.map { |v| [v, I18n.translate("activerecord.attributes.#{self.to_s.downcase}.enums.#{attr_name}.#{v}")] }.flatten]
-          elsif enum.class == Hash
+          if enum.instance_of?(Hash)
             values = enum
-            enum   = enum.map { |key,value| [value, key] }
-            enum.sort! { |a, b| a[0] <=> b[0] }
           else
-            values = Hash[*enum.collect { |v| [v, v.to_s.capitalize] }.flatten]
+            if i18n
+              values = Hash[*enum.map { |v| [v, I18n.translate("activerecord.attributes.#{ActiveSupport::Inflector.underscore(self)}.enums.#{attr_name}.#{v}")] }.flatten]
+            else
+              values = Hash[*enum.map { |v| [v, (configuration[:capitalize] ? v.to_s.capitalize : v.to_s)] }.flatten]
+            end
           end
-          class_eval("#{attr_name.upcase}_VALUES = values")
-          class_eval("def self.get_#{attr_name}_values; #{attr_name.upcase}_VALUES.map(&:reverse); end")
+
+          # Get the values of :in
+          class_eval "#{attr_name.upcase}_VALUES = values"
+          # This one is a dropdown helper
+          class_eval "def self.get_#{attr_name}_values; #{attr_name.upcase}_VALUES.map(&:reverse); end"
         end
 
-        class_eval("validates_inclusion_of :#{attr_names.join(', :')}, configuration")
+        class_eval "validates_inclusion_of :#{attr_names.join(', :')}, configuration"
       end
 
       attr_names.each do |attr_name|
         attr_name = attr_name.to_s
         class_eval("def #{attr_name}; read_and_symbolize_attribute('#{attr_name}'); end")
-        class_eval("def #{attr_name}_text; read_i18n_attribute('#{attr_name}'); end") if i18n
         class_eval("def #{attr_name}= (value); write_symbolized_attribute('#{attr_name}', value); end")
+        if i18n
+          class_eval("def #{attr_name}_text; read_i18n_attribute('#{attr_name}'); end")
+        elsif enum
+          class_eval("def #{attr_name}_text; #{attr_name.upcase}_VALUES[#{attr_name}]; end")
+        else
+          class_eval("def #{attr_name}_text; #{attr_name}.to_s; end")
+        end
       end
     end
   end
@@ -84,7 +94,7 @@ module Symbolize
   # String becomes symbol, booleans string and nil nil.
   def symbolize_attribute attr
     case attr
-      when String then attr.to_sym
+      when String then attr.empty? ? nil : attr.to_sym
       when Symbol, TrueClass, FalseClass then attr
       else nil
     end
@@ -97,7 +107,7 @@ module Symbolize
 
   # Return an attribute's i18n
   def read_i18n_attribute attr_name
-    I18n.translate("activerecord.attributes.#{self.class.to_s.downcase}.enums.#{attr_name}.#{read_attribute(attr_name)}") #.to_sym rescue nila
+    I18n.translate("activerecord.attributes.#{ActiveSupport::Inflector.underscore(self.class)}.enums.#{attr_name}.#{read_attribute(attr_name)}") #.to_sym rescue nila
   end
 
   # Write a symbolized value

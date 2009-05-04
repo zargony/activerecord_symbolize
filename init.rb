@@ -1,3 +1,1 @@
-ActiveRecord::Base.send(:include, Symbolize)
-
-require File.dirname(__FILE__) + '/lib/symbolize_helper'
+require File.dirname(__FILE__) + "/rails/init"

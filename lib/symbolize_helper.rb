@@ -4,16 +4,17 @@ module ActionView
     module FormHelper
       # helper to create a select drop down list for the symbolize values
       def select_sym(object, method, choices = nil, options = {}, html_options = {})
-        InstanceTag.new(object, method, self, nil, options.delete(:object)).
+
+        InstanceTag.new(object, method, self, options.delete(:object)).
           to_select_sym_tag(choices, options, html_options)
       end
-      
+
       def radio_sym(object, method, choices = nil, options = {})
-        InstanceTag.new(object, method, self, nil, options.delete(:object)).
+        InstanceTag.new(object, method, self, options.delete(:object)).
           to_radio_sym_tag(choices, options)
       end
     end
-    
+
     class FormBuilder
       def select_sym(method, choices = nil, options = {}, html_options = {})
         @template.select_sym(@object_name, method, choices, options, html_options)
@@ -31,7 +32,7 @@ module ActionView
         choices = symbolize_values(choices)
         to_select_tag(choices, options, html_options)
       end
-      
+
       def to_radio_sym_tag(choices, options)
         choices = symbolize_values(choices)
         raise ArgumentError, "No values for radio tag" unless choices
@@ -50,9 +51,9 @@ module ActionView
         end
         tag_text
       end
-      
+
       def symbolize_values(choices)
-        choices.nil? ? object.class.send("get_#{@method_name}_options") : choices
+        choices.nil? ? object.class.send("get_#{@method_name}_values") : choices
       end
     end
   end
