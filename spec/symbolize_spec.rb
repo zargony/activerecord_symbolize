@@ -1,5 +1,7 @@
+# -*- coding: utf-8 -*-
 require File.dirname(__FILE__) + '/spec_helper'
 
+#
 # Test model
 class User < ActiveRecord::Base
   symbolize :other
@@ -88,7 +90,7 @@ describe "Symbolize" do
     end
 
     it "should get the correct values" do
-      User.get_status_values.should eql([["Inactive", :inactive], ["Active", :active]])
+      User.get_status_values.should eql([["Active", :active],["Inactive", :inactive]])
       User::STATUS_VALUES.should eql({:inactive=>"Inactive", :active=>"Active"})
     end
 
@@ -97,7 +99,7 @@ describe "Symbolize" do
     end
 
     it "should get the correct values" do
-      User.get_gui_values.should eql([["cocoa", :cocoa], ["qt", :qt], ["gtk", :gtk]])
+      User.get_gui_values.should =~ [["cocoa", :cocoa], ["qt", :qt], ["gtk", :gtk]]
       User::GUI_VALUES.should eql({:cocoa=>"cocoa", :qt=>"qt", :gtk=>"gtk"})
     end
 
@@ -106,7 +108,7 @@ describe "Symbolize" do
     end
 
     it "should get the correct values" do
-      User.get_so_values.should eql([["Linux", :linux], ["Mac OS X", :mac], ["Windows", :win]])
+      User.get_so_values.should =~ [["Linux", :linux], ["Mac OS X", :mac], ["Windows", :win]]
       User::SO_VALUES.should eql({:linux=>"Linux", :mac=>"Mac OS X", :win=>"Windows"})
     end
 
@@ -165,7 +167,6 @@ describe "Symbolize" do
       end
 
       it "test_helper_select_sym" do
-        pending
         @user.status = :inactive
         output = "<select id=\"user_status\" name=\"user[status]\">#{options_for_select(@options_status, @user.status)}</select>"
         output.should eql(select_sym("user", "status", nil))
@@ -193,15 +194,15 @@ describe "Symbolize" do
     describe "i18n" do
 
       it "should test i18n ones" do
-        @user.language_text.should eql("Portugues")
+        @user.language_text.should eql("Português")
       end
 
       it "should get the correct values" do
-        User.get_language_values.should eql([["Portugues", :pt], ["Ingles", :en]])
+        User.get_language_values.should =~ [["Português", :pt], ["Inglês", :en]]
       end
 
       it "should get the correct values" do
-        User::LANGUAGE_VALUES.should eql({:pt=>"Portugues", :en=>"Ingles"})
+        User::LANGUAGE_VALUES.should eql({:pt => "Português", :en => "Inglês"})
       end
 
       it "should test boolean" do
@@ -209,7 +210,7 @@ describe "Symbolize" do
       end
 
       it "should get the correct values" do
-        User.get_sex_values.should eql([["Masculino", false], ["Feminino", true]])
+        User.get_sex_values.should eql([["Feminino", true],["Masculino", false]])
       end
 
       it "should get the correct values" do
@@ -218,7 +219,7 @@ describe "Symbolize" do
 
       it "should translate a multiword class" do
         @skill = UserSkill.create(:kind => :magic)
-        @skill.kind_text.should eql("Magica")
+        @skill.kind_text.should eql("Mágica")
       end
 
     end

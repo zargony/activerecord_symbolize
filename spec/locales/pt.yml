@@ -4,13 +4,13 @@ pt:
       user:
         enums:
           language:
-            pt: Portugues
-            en: Ingles
+            pt: Português
+            en: Inglês
           sex:
             "true": Feminino
             "false": Masculino
       user_skill:
         enums:
           kind:
-            magic: Magica
+            magic: Mágica
             agility: Agilidade

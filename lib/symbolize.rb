@@ -61,9 +61,9 @@ module Symbolize
             values = enum
           else
             if i18n
-              values = Hash[*enum.map { |v| [v, I18n.translate("activerecord.attributes.#{ActiveSupport::Inflector.underscore(self)}.enums.#{attr_name}.#{v}")] }.flatten]
+              values = ActiveSupport::OrderedHash[*enum.map { |v| [v, I18n.translate("activerecord.attributes.#{ActiveSupport::Inflector.underscore(self)}.enums.#{attr_name}.#{v}")] }.flatten]
             else
-              values = Hash[*enum.map { |v| [v, (configuration[:capitalize] ? v.to_s.capitalize : v.to_s)] }.flatten]
+              values = ActiveSupport::OrderedHash[*enum.map { |v| [v, (configuration[:capitalize] ? v.to_s.capitalize : v.to_s)] }.flatten]
             end
           end
 
@@ -110,8 +110,7 @@ module Symbolize
     I18n.translate("activerecord.attributes.#{ActiveSupport::Inflector.underscore(self.class)}.enums.#{attr_name}.#{read_attribute(attr_name)}") #.to_sym rescue nila
   end
 
-  # Write a symbolized value
-  # Watch out for booleans.
+  # Write a symbolized value. Watch out for booleans.
   def write_symbolized_attribute attr_name, value
     val = { "true" => true, "false" => false }[value]
     val = symbolize_attribute(value) if val.nil?
