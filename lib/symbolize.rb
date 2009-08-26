@@ -52,8 +52,15 @@ module Symbolize
 
       enum = configuration[:in] || configuration[:within]
       i18n = configuration[:i18n].nil? && !enum.instance_of?(Hash) && enum ? true : configuration[:i18n]
+      methods = configuration[:methods]
 
       unless enum.nil?
+        # Little monkeypatching, <1.8 Hashes aren't ordered.
+        hsh = if RUBY_VERSION > '1.9' || !defined?('ActiveSupport')
+          Hash
+        else
+          ActiveSupport::OrderedHash
+        end
 
         attr_names.each do |attr_name|
           attr_name = attr_name.to_s
@@ -61,16 +68,25 @@ module Symbolize
             values = enum
           else
             if i18n
-              values = ActiveSupport::OrderedHash[*enum.map { |v| [v, I18n.translate("activerecord.attributes.#{ActiveSupport::Inflector.underscore(self)}.enums.#{attr_name}.#{v}")] }.flatten]
+              values = hsh[*enum.map { |v| [v, I18n.translate("activerecord.attributes.#{ActiveSupport::Inflector.underscore(self)}.enums.#{attr_name}.#{v}")] }.flatten]
             else
-              values = ActiveSupport::OrderedHash[*enum.map { |v| [v, (configuration[:capitalize] ? v.to_s.capitalize : v.to_s)] }.flatten]
+              values = hsh[*enum.map { |v| [v, (configuration[:capitalize] ? v.to_s.capitalize : v.to_s)] }.flatten]
             end
           end
 
           # Get the values of :in
-          class_eval "#{attr_name.upcase}_VALUES = values"
+          const =  "#{attr_name}_values"
+          const_set const.upcase, values unless const_defined? const.upcase
           # This one is a dropdown helper
-          class_eval "def self.get_#{attr_name}_values; #{attr_name.upcase}_VALUES.map(&:reverse); end"
+          class_eval "def self.get_#{const}; #{const.upcase}.map(&:reverse); end"
+
+          if methods
+            values.each do |value|
+              define_method("#{value[0]}?") do
+                self.send(attr_name) == value[0]
+              end
+            end
+          end
         end
 
         class_eval "validates_inclusion_of :#{attr_names.join(', :')}, configuration"

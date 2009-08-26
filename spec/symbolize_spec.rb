@@ -9,11 +9,13 @@ class User < ActiveRecord::Base
   symbolize :sex, :in => [true, false]
   symbolize :status , :in => [:active, :inactive], :i18n => false, :capitalize => true
   symbolize :so, :allow_blank => true, :in => {
+    :linux => 'Linux',
     :mac   => 'Mac OS X',
-    :win   => 'Windows',
-    :linux => 'Linux'
+    :win   => 'Videogame'
   }
   symbolize :gui, :allow_blank => true, :in => [:cocoa, :qt, :gtk], :i18n => false
+  symbolize :karma, :in => [:good, :bad, :ugly], :methods => true, :i18n => false, :allow_nil => true
+
 end
 
 class UserSkill < ActiveRecord::Base
@@ -108,8 +110,8 @@ describe "Symbolize" do
     end
 
     it "should get the correct values" do
-      User.get_so_values.should =~ [["Linux", :linux], ["Mac OS X", :mac], ["Windows", :win]]
-      User::SO_VALUES.should eql({:linux=>"Linux", :mac=>"Mac OS X", :win=>"Windows"})
+      User.get_so_values.should =~ [["Linux", :linux], ["Mac OS X", :mac], ["Videogame", :win]]
+      User::SO_VALUES.should eql({:linux => "Linux", :mac => "Mac OS X", :win => "Videogame"})
     end
 
     it "test_symbolize_humanize" do
@@ -163,7 +165,7 @@ describe "Symbolize" do
       before(:each) do
         @options_status = [['Active', :active], ['Inactive', :inactive]]
         @options_gui    = [["cocoa", :cocoa], ["qt", :qt], ["gtk", :gtk]]
-        @options_so     = [["Linux", :linux]  , ["Mac OS X", :mac], ["Windows", :win]]
+        @options_so     = [["Linux", :linux]  , ["Mac OS X", :mac], ["Videogame", :win]]
       end
 
       it "test_helper_select_sym" do
@@ -220,6 +222,27 @@ describe "Symbolize" do
       it "should translate a multiword class" do
         @skill = UserSkill.create(:kind => :magic)
         @skill.kind_text.should eql("Mágica")
+      end
+
+    end
+
+    describe "Methods" do
+
+      it "should play nice with other stuff" do
+        @user.karma.should be_nil
+        User::KARMA_VALUES.should eql({:bad => "bad", :ugly => "ugly", :good => "good"})
+      end
+
+      it "should provide a boolean method" do
+        @user.should_not be_good
+        @user.karma = :ugly
+        @user.should be_ugly
+      end
+
+      it "should work" do
+        @user.karma = "good"
+        @user.should be_good
+        @user.should_not be_bad
       end
 
     end

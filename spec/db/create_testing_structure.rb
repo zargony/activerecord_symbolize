@@ -3,6 +3,7 @@ class CreateTestingStructure < ActiveRecord::Migration
     create_table :users do |t|
       t.string :name, :so, :gui, :other, :status, :language
       t.string :limited, :limit => 10
+      t.string :karma, :limit => 5
       t.boolean :sex
     end
     create_table :user_skills do |t|

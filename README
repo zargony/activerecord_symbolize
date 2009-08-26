@@ -40,18 +40,26 @@ Plugin:
 Add "symbolize :attr_name" to your model class. You may also want to add
 validates_inclusion_of to restrict the possible values (just like an enum).
 
-  class User < ActiveRecord::Base
-    symbolize :gender, :in => [:female, :male]
-    symbolize :so, :in => {
-      :linux   => "Linux",
-      :mac     => "Mac OS X"
-    }
-    symbolize :gui, , :in => [:gnome, :kde, :xfce], :allow_blank => true
-    symbolize :browser, :in => [:firefox, :opera], :i18n => false
+    class User < ActiveRecord::Base
+      symbolize :gender, :in => [:female, :male]
+      symbolize :so, :in => {
+        :linux   => "Linux",
+        :mac     => "Mac OS X"
+      }
+      symbolize :gui, , :in => [:gnome, :kde, :xfce], :allow_blank => true
+      symbolize :browser, :in => [:firefox, :opera], :i18n => false, :methods => true
   end
 
+=== in/within
 
-== i18n
+The values allowed on the enum field, you can provide a hash with
+{:value => "Human text"} or an array of keys to be i18n eval (or not).
+Booleans are also supported. See below.
+
+allow_(blank|nil): What you expect.
+
+
+=== i18n
 
 If you don`t provide a hash with values, it will try i18n:
 
@@ -71,7 +79,16 @@ You can skip i18n lookup with :i18n => false
   symbolize :gender, :in => [:female, :male], :i18n => false
 
 
-== Booleans
+=== method
+
+If you provide the method option, some fancy boolean methods will be added:
+In our User example, browser has this option, so you can do:
+
+    @user.firefox?
+    @user.opera?
+
+
+=== Booleans
 
 Its possible to use boolean fields also.
   symbolize :switch, :in => [true, false]
