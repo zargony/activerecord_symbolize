@@ -5,7 +5,7 @@
 
 Gem::Specification.new do |s|
   s.name = %q{symbolize}
-  s.version = "1.0.0"
+  s.version = "1.0.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Marcos Piccinini"]
@@ -16,10 +16,12 @@ Gem::Specification.new do |s|
     "README"
   ]
   s.files = [
-    ".gitignore",
+    ".document",
+     ".gitignore",
      "MIT-LICENSE",
      "README",
      "Rakefile",
+     "VERSION",
      "init.rb",
      "lib/symbolize.rb",
      "lib/symbolize_helper.rb",
@@ -27,7 +29,8 @@ Gem::Specification.new do |s|
      "spec/db/create_testing_structure.rb",
      "spec/locales/pt.yml",
      "spec/spec_helper.rb",
-     "spec/symbolize_spec.rb"
+     "spec/symbolize_spec.rb",
+     "symbolize.gemspec"
   ]
   s.homepage = %q{http://github.com/nofxx/symbolize}
   s.rdoc_options = ["--charset=UTF-8"]
