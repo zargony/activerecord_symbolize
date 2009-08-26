@@ -13,13 +13,13 @@ Gem::Specification.new do |s|
   s.description = %q{ActiveRecord enums with i18n}
   s.email = %q{x@nofxx.com}
   s.extra_rdoc_files = [
-    "README"
+    "README.rdoc"
   ]
   s.files = [
     ".document",
      ".gitignore",
      "MIT-LICENSE",
-     "README",
+     "README.rdoc",
      "Rakefile",
      "VERSION",
      "init.rb",
