@@ -2,6 +2,22 @@ require 'rubygems'
 require 'rake'
 require 'spec/rake/spectask'
 
+begin
+  require 'jeweler'
+  Jeweler::Tasks.new do |gem|
+    gem.name = "symbolize"
+    gem.summary = "ActiveRecord enums with i18n"
+    gem.description = "ActiveRecord enums with i18n"
+    gem.email = "x@nofxx.com"
+    gem.homepage = "http://github.com/nofxx/symbolize"
+    gem.authors = ["Marcos Piccinini"]
+    gem.add_development_dependency "rspec"
+    # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
+  end
+rescue LoadError
+  puts "Jeweler (or a dependency) not available. Install it with: sudo gem install jeweler"
+end
+
 Spec::Rake::SpecTask.new(:spec) do |spec|
   spec.libs << 'lib' << 'spec'
   spec.spec_files = FileList['spec/**/*_spec.rb']

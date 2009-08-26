@@ -24,6 +24,14 @@ Github: http://github.com/zargony/activerecord_symbolize
 
 == Install
 
+Gem:
+
+  gem install nofxx-symbolize
+  config.gem "nofxx-symbolize", :lib => "symbolize"
+
+
+Plugin:
+
   ./script/plugin install git://github.com/nofxx/activerecord_symbolize.git
 
 
@@ -123,7 +131,7 @@ Its possible to use boolean fields also.
 == Notes
 
 This fork:
-http://github.com/nofxx/activerecord_symbolize
+http://github.com/nofxx/symbolize
 
 
 Forked from:
