@@ -26,8 +26,10 @@ Github: http://github.com/zargony/activerecord_symbolize
 
 Gem:
 
-  gem install nofxx-symbolize
-  config.gem "nofxx-symbolize", :lib => "symbolize"
+  gem install gemcutter
+  gem tumble
+  gem install symbolize
+  config.gem "symbolize", :source => 'http://gemcutter.org'
 
 
 Plugin:
