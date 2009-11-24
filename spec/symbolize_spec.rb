@@ -7,14 +7,14 @@ class User < ActiveRecord::Base
   symbolize :other
   symbolize :language, :in => [:pt, :en]
   symbolize :sex, :in => [true, false]
-  symbolize :status , :in => [:active, :inactive], :i18n => false, :capitalize => true
+  symbolize :status , :in => [:active, :inactive], :i18n => false, :capitalize => true, :scopes => true
   symbolize :so, :allow_blank => true, :in => {
     :linux => 'Linux',
     :mac   => 'Mac OS X',
     :win   => 'Videogame'
   }
   symbolize :gui, :allow_blank => true, :in => [:cocoa, :qt, :gtk], :i18n => false
-  symbolize :karma, :in => [:good, :bad, :ugly], :methods => true, :i18n => false, :allow_nil => true
+  symbolize :karma, :in => [:good, :bad, :ugly], :methods => true, :i18n => false, :allow_nil => true, :scopes => true
 
 end
 
@@ -156,6 +156,11 @@ describe "Symbolize" do
       User.with_scope(:find => { :conditions => { :status => :inactive }}) do
         User.find(:all).map(&:name).should eql(['Bob'])
       end
+    end
+    
+    it "should have named scopes" do
+      User.inactive.should == User.find(:all, :conditions => { :status => :inactive })
+      User.good.should == User.find(:all, :conditions => { :karma => :good })
     end
 
     describe "View helpers" do

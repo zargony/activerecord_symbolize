@@ -41,11 +41,11 @@ Add "symbolize :attr_name" to your model class. You may also want to add
 validates_inclusion_of to restrict the possible values (just like an enum).
 
     class User < ActiveRecord::Base
-      symbolize :gender, :in => [:female, :male]
+      symbolize :gender, :in => [:female, :male], :scopes => true
       symbolize :so, :in => {
         :linux   => "Linux",
         :mac     => "Mac OS X"
-      }
+      }, :scopes => true
       symbolize :gui, , :in => [:gnome, :kde, :xfce], :allow_blank => true
       symbolize :browser, :in => [:firefox, :opera], :i18n => false, :methods => true
   end
@@ -88,6 +88,18 @@ In our User example, browser has this option, so you can do:
     @user.opera?
 
 
+=== scopes (BETA)
+
+If you provide the scopes option, some fancy named scopes will be added:
+In our User example, gender has this option, so you can do:
+
+    User.female => User.find(:all, :conditions => { :gender => :female })
+    
+And you can chain named scopes:
+
+    User.female.mac => User.find(:all, :conditions => { :gender => :female, :so => :mac })
+
+
 === Booleans
 
 Its possible to use boolean fields also.
@@ -109,6 +121,7 @@ Its possible to use boolean fields also.
   u.gender                        # => :male
 
   u = User.find(:all, :conditions => { :gender => :female })
+  u = User.female
 
   u = User.new(:name => 'ET', :gender => :unknown)
   u.save                          # => validation fails

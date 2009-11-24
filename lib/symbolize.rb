@@ -53,6 +53,7 @@ module Symbolize
       enum = configuration[:in] || configuration[:within]
       i18n = configuration[:i18n].nil? && !enum.instance_of?(Hash) && enum ? true : configuration[:i18n]
       methods = configuration[:methods]
+      scopes = configuration[:scopes]
 
       unless enum.nil?
         # Little monkeypatching, <1.8 Hashes aren't ordered.
@@ -85,6 +86,12 @@ module Symbolize
               define_method("#{value[0]}?") do
                 self.send(attr_name) == value[0]
               end
+            end
+          end
+          
+          if scopes
+            values.each do |value|
+              named_scope value[0], :conditions => { attr_name => value[0] }
             end
           end
         end
