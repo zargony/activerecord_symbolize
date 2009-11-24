@@ -50,7 +50,7 @@ validates_inclusion_of to restrict the possible values (just like an enum).
       }, :scopes => true
       symbolize :gui, , :in => [:gnome, :kde, :xfce], :allow_blank => true
       symbolize :browser, :in => [:firefox, :opera], :i18n => false, :methods => true
-      symbolize :anrgy, :in => [true, false], :scopes => true
+      symbolize :angry, :in => [true, false], :scopes => true
   end
 
 === in/within
