@@ -48,6 +48,7 @@ validates_inclusion_of to restrict the possible values (just like an enum).
       }, :scopes => true
       symbolize :gui, , :in => [:gnome, :kde, :xfce], :allow_blank => true
       symbolize :browser, :in => [:firefox, :opera], :i18n => false, :methods => true
+      symbolize :anrgy, :in => [true, false], :scopes => true
   end
 
 === in/within
@@ -88,18 +89,6 @@ In our User example, browser has this option, so you can do:
     @user.opera?
 
 
-=== scopes (BETA)
-
-If you provide the scopes option, some fancy named scopes will be added:
-In our User example, gender has this option, so you can do:
-
-    User.female => User.find(:all, :conditions => { :gender => :female })
-    
-And you can chain named scopes:
-
-    User.female.mac => User.find(:all, :conditions => { :gender => :female, :so => :mac })
-
-
 === Booleans
 
 Its possible to use boolean fields also.
@@ -111,6 +100,25 @@ Its possible to use boolean fields also.
       "false": Off
       "nil": Unknown
 
+
+=== scopes (BETA)
+
+If you provide the scopes option, some fancy named scopes will be added:
+In our User example, gender has this option, so you can do:
+
+    User.female => User.find(:all, :conditions => { :gender => :female })
+
+You can chain named scopes as well:
+
+    User.female.mac => User.find(:all, :conditions => { :gender => :female, :so => :mac })
+
+For boolean colums you can use
+
+    User.angry     => User.find(:all, :conditions => { :angry => true })
+    User.not_angry => User.find(:all, :conditions => { :angry => false })
+    
+    ( or with_[attribute] and without_[attribute] )
+    
 
 == Examples
 

@@ -6,16 +6,16 @@ require File.dirname(__FILE__) + '/spec_helper'
 class User < ActiveRecord::Base
   symbolize :other
   symbolize :language, :in => [:pt, :en]
-  symbolize :sex, :in => [true, false]
+  symbolize :sex, :in => [true, false], :scopes => true
   symbolize :status , :in => [:active, :inactive], :i18n => false, :capitalize => true, :scopes => true
   symbolize :so, :allow_blank => true, :in => {
     :linux => 'Linux',
     :mac   => 'Mac OS X',
     :win   => 'Videogame'
-  }
+  }, :scopes => true
   symbolize :gui, :allow_blank => true, :in => [:cocoa, :qt, :gtk], :i18n => false
-  symbolize :karma, :in => [:good, :bad, :ugly], :methods => true, :i18n => false, :allow_nil => true, :scopes => true
-
+  symbolize :karma, :in => [:good, :bad, :ugly], :methods => true, :i18n => false, :allow_nil => true
+  symbolize :public, :in => [true, false], :scopes => true
 end
 
 class UserSkill < ActiveRecord::Base
@@ -28,8 +28,8 @@ class << ActiveRecord::Base
 end
 
 # Test records
-User.create(:name => 'Anna', :other => :fo, :status => :active  , :so => :linux, :gui => :qt, :language => :pt, :sex => true)
-User.create(:name => 'Bob' , :other => :bar,:status => :inactive, :so => :mac, :gui => :gtk, :language => :en, :sex => false)
+User.create(:name => 'Anna', :other => :fo, :status => :active  , :so => :linux, :gui => :qt, :language => :pt, :sex => true, :public => true)
+User.create(:name => 'Bob' , :other => :bar,:status => :inactive, :so => :mac, :gui => :gtk, :language => :en, :sex => false, :public => false)
 
 
 describe "Symbolize" do
@@ -159,8 +159,17 @@ describe "Symbolize" do
     end
     
     it "should have named scopes" do
-      User.inactive.should == User.find(:all, :conditions => { :status => :inactive })
-      User.good.should == User.find(:all, :conditions => { :karma => :good })
+      anna = User.find_by_name!('Anna')
+      bob = User.find_by_name!('Bob')
+      
+      User.inactive.should == [bob]
+      User.linux.should == [anna]
+      
+      User.with_sex.should == [anna]
+      User.without_sex.should == [bob]
+      
+      User.public.should == [anna]
+      User.not_public.should == [bob]
     end
 
     describe "View helpers" do

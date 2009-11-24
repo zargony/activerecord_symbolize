@@ -5,6 +5,7 @@ class CreateTestingStructure < ActiveRecord::Migration
       t.string :limited, :limit => 10
       t.string :karma, :limit => 5
       t.boolean :sex
+      t.boolean :public
     end
     create_table :user_skills do |t|
       t.string :kind

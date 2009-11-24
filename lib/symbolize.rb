@@ -54,6 +54,7 @@ module Symbolize
       i18n = configuration[:i18n].nil? && !enum.instance_of?(Hash) && enum ? true : configuration[:i18n]
       methods = configuration[:methods]
       scopes = configuration[:scopes]
+      validation = configuration[:validation] != false
 
       unless enum.nil?
         # Little monkeypatching, <1.8 Hashes aren't ordered.
@@ -91,12 +92,24 @@ module Symbolize
           
           if scopes
             values.each do |value|
-              named_scope value[0], :conditions => { attr_name => value[0] }
+              if value[0].respond_to?(:to_sym)
+                named_scope value[0].to_sym, :conditions => { attr_name => value[0].to_sym }
+              else
+                if value[0] == true || value[0] == false
+                  named_scope "with_#{attr_name}", :conditions => { attr_name => true }
+                  named_scope "without_#{attr_name}", :conditions => { attr_name => false }
+                  
+                  named_scope attr_name, :conditions => { attr_name => true }
+                  named_scope "not_#{attr_name}", :conditions => { attr_name => false }                  
+                end
+              end  
             end
           end
         end
 
-        class_eval "validates_inclusion_of :#{attr_names.join(', :')}, configuration"
+        if validation
+          class_eval "validates_inclusion_of :#{attr_names.join(', :')}, configuration"          
+        end
       end
 
       attr_names.each do |attr_name|
