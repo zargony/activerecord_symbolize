@@ -177,3 +177,5 @@ class Symbol
     "'#{ActiveRecord::Base.connection.quote_string(self.to_s)}'"
   end
 end
+
+ActiveRecord::Base.send(:include, Symbolize) if ActiveRecord::VERSION::MAJOR >= 3
