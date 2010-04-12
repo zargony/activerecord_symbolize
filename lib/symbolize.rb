@@ -91,22 +91,21 @@ module Symbolize
             end
           end
 
-          def define_scope(*args);   ActiveRecord::VERSION::MAJOR < 3 ? named_scope(*args) : scope(*args);          end
 
           if scopes
-
+            scope_comm = lambda { |*args| ActiveRecord::VERSION::MAJOR >= 3 ? scope(*args) : named_scope(*args)}
             values.each do |value|
-              if value[0].respond_to?(:to_sym)
-                define_scope value[0].to_sym, :conditions => { attr_name => value[0].to_sym }
-              else
-                if value[0] == true || value[0] == false
-                  define_scope "with_#{attr_name}", :conditions => { attr_name => true }
-                  define_scope "without_#{attr_name}", :conditions => { attr_name => false }
+                if value[0].respond_to?(:to_sym)
+                  scope_comm.call( value[0].to_sym, :conditions => { attr_name => value[0].to_sym })
+                else
+                  if value[0] == true || value[0] == false
+                    scope_comm.call( "with_#{attr_name}", :conditions => { attr_name => true })
+                    scope_comm.call( "without_#{attr_name}", :conditions => { attr_name => false })
 
-                  define_scope attr_name, :conditions => { attr_name => true }
-                  define_scope "not_#{attr_name}", :conditions => { attr_name => false }
+                    scope_comm.call( attr_name.to_sym, :conditions => { attr_name => true })
+                    scope_comm.call( "not_#{attr_name}", :conditions => { attr_name => false })
+                  end
                 end
-              end
             end
           end
         end

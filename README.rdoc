@@ -43,6 +43,10 @@ or
 
   rails plugin install in Rails3+
 
+== Rails 3 (beta)
+
+Specs pass with rails 3, but a scope :public == fail.
+
 
 == Usage
 

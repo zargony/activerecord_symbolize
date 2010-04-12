@@ -15,7 +15,7 @@ class User < ActiveRecord::Base
   }, :scopes => true
   symbolize :gui, :allow_blank => true, :in => [:cocoa, :qt, :gtk], :i18n => false
   symbolize :karma, :in => [:good, :bad, :ugly], :methods => true, :i18n => false, :allow_nil => true
-  symbolize :public, :in => [true, false], :scopes => true
+  symbolize :cool, :in => [true, false], :scopes => true
 end
 
 class UserSkill < ActiveRecord::Base
@@ -23,19 +23,22 @@ class UserSkill < ActiveRecord::Base
 end
 
 # Make with_scope public-usable for testing
+#if ActiveRecord::VERSION::MAJOR < 3
 class << ActiveRecord::Base
   public :with_scope
 end
+#end
 
 # Test records
-User.create(:name => 'Anna', :other => :fo, :status => :active  , :so => :linux, :gui => :qt, :language => :pt, :sex => true, :public => true)
-User.create(:name => 'Bob' , :other => :bar,:status => :inactive, :so => :mac, :gui => :gtk, :language => :en, :sex => false, :public => false)
+User.create(:name => 'Anna', :other => :fo, :status => :active  , :so => :linux, :gui => :qt, :language => :pt, :sex => true, :cool => true)
+User.create(:name => 'Bob' , :other => :bar,:status => :inactive, :so => :mac, :gui => :gtk, :language => :en, :sex => false, :cool => false)
 
 
 describe "Symbolize" do
 
 
   it "should respond to symbolize" do
+    p ActiveRecord::VERSION::MAJOR
     ActiveRecord::Base.should respond_to :symbolize
   end
 
@@ -147,29 +150,69 @@ describe "Symbolize" do
       #   assert_equal "'weird''; chars'", @user.status.quoted_id
     end
 
-    it "test_symbolized_finder" do
-      User.find(:all, :conditions => { :status => :inactive }).map(&:name).should eql(['Bob'])
-      User.find_all_by_status(:inactive).map(&:name).should eql(['Bob'])
-    end
+    describe "ActiveRecord stuff" do
 
-    it "test_symbolized_with_scope" do
-      User.with_scope(:find => { :conditions => { :status => :inactive }}) do
-        User.find(:all).map(&:name).should eql(['Bob'])
+      if ActiveRecord::VERSION::MAJOR < 3
+
+        it "test_symbolized_finder" do
+          User.find(:all, :conditions => { :status => :inactive }).map(&:name).should eql(['Bob'])
+          User.find_all_by_status(:inactive).map(&:name).should eql(['Bob'])
+        end
+
+        it "test_symbolized_with_scope" do
+          User.with_scope(:find => { :conditions => { :status => :inactive }}) do
+            User.find(:all).map(&:name).should eql(['Bob'])
+          end
+        end
+
+      else
+
+        it "test_symbolized_finder" do
+          User.where({ :status => :inactive }).all.map(&:name).should eql(['Bob'])
+          User.find_all_by_status(:inactive).map(&:name).should eql(['Bob'])
+        end
+
+        it "test_symbolized_with_scope" do
+          User.with_scope(:find => { :conditions => { :status => :inactive }}) do
+            User.find(:all).map(&:name).should eql(['Bob'])
+          end
+        end
+
+        describe "Named Scopes" do
+
+          before do
+            @anna = User.find_by_name!('Anna')
+            @bob = User.find_by_name!('Bob')
+          end
+
+          it "should have main named scope" do
+            User.inactive.should == [@bob]
+          end
+
+          it "should have other to test better" do
+            User.linux.should == [@anna]
+          end
+
+          it "should have 'with' helper" do
+            User.with_sex.should == [@anna]
+          end
+
+          it "should have 'without' helper" do
+            User.without_sex.should == [@bob]
+          end
+
+          it "should have 'attr_name' helper" do
+            User.cool.should == [@anna]
+          end
+
+          it "should have 'not_attr_name' helper" do
+            User.not_cool.should == [@bob]
+          end
+
+        end
+
       end
-    end
-    
-    it "should have named scopes" do
-      anna = User.find_by_name!('Anna')
-      bob = User.find_by_name!('Bob')
-      
-      User.inactive.should == [bob]
-      User.linux.should == [anna]
-      
-      User.with_sex.should == [anna]
-      User.without_sex.should == [bob]
-      
-      User.public.should == [anna]
-      User.not_public.should == [bob]
+
     end
 
     describe "View helpers" do
