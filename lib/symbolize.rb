@@ -46,6 +46,7 @@ module Symbolize
   module ClassMethods
     # Specifies that values of the given attributes should be returned
     # as symbols. The table column should be created of type string.
+
     def symbolize *attr_names
       configuration = {}
       configuration.update(attr_names.extract_options!)
@@ -58,9 +59,9 @@ module Symbolize
 
       unless enum.nil?
         # Little monkeypatching, <1.8 Hashes aren't ordered.
-        hsh = if RUBY_VERSION > '1.9' || !defined?('ActiveSupport')
+        hsh = if RUBY_VERSION > '1.9'
           Hash
-        else
+        elsif defined?('ActiveSupport')
           ActiveSupport::OrderedHash
         end
 
@@ -89,26 +90,29 @@ module Symbolize
               end
             end
           end
-          
+
+          def define_scope(*args);   ActiveRecord::VERSION::MAJOR < 3 ? named_scope(*args) : scope(*args);          end
+
           if scopes
+
             values.each do |value|
               if value[0].respond_to?(:to_sym)
-                named_scope value[0].to_sym, :conditions => { attr_name => value[0].to_sym }
+                define_scope value[0].to_sym, :conditions => { attr_name => value[0].to_sym }
               else
                 if value[0] == true || value[0] == false
-                  named_scope "with_#{attr_name}", :conditions => { attr_name => true }
-                  named_scope "without_#{attr_name}", :conditions => { attr_name => false }
-                  
-                  named_scope attr_name, :conditions => { attr_name => true }
-                  named_scope "not_#{attr_name}", :conditions => { attr_name => false }                  
+                  define_scope "with_#{attr_name}", :conditions => { attr_name => true }
+                  define_scope "without_#{attr_name}", :conditions => { attr_name => false }
+
+                  define_scope attr_name, :conditions => { attr_name => true }
+                  define_scope "not_#{attr_name}", :conditions => { attr_name => false }
                 end
-              end  
+              end
             end
           end
         end
 
         if validation
-          class_eval "validates_inclusion_of :#{attr_names.join(', :')}, configuration"          
+          class_eval "validates_inclusion_of :#{attr_names.join(', :')}, configuration"
         end
       end
 

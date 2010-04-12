@@ -12,6 +12,7 @@ begin
     gem.homepage = "http://github.com/nofxx/symbolize"
     gem.authors = ["Marcos Piccinini"]
     gem.add_development_dependency "rspec"
+    gem.add_development_dependency "sqlite3"
     # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
   end
 rescue LoadError
