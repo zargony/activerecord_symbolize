@@ -26,15 +26,22 @@ Github: http://github.com/zargony/activerecord_symbolize
 
 Gem:
 
-  gem install gemcutter
-  gem tumble
   gem install symbolize
   config.gem "symbolize", :source => 'http://gemcutter.org'
 
 
+Rails 3+ Gemfile
+
+  gem "symbolize"
+
+
 Plugin:
 
-  ./script/plugin install git://github.com/nofxx/activerecord_symbolize.git
+  ./script/plugin install git://github.com/nofxx/symbolize.git
+
+or
+
+  rails plugin install in Rails3+
 
 
 == Usage
@@ -52,6 +59,7 @@ validates_inclusion_of to restrict the possible values (just like an enum).
       symbolize :browser, :in => [:firefox, :opera], :i18n => false, :methods => true
       symbolize :angry, :in => [true, false], :scopes => true
   end
+
 
 === in/within
 
@@ -118,9 +126,9 @@ For boolean colums you can use
 
     User.angry     => User.find(:all, :conditions => { :angry => true })
     User.not_angry => User.find(:all, :conditions => { :angry => false })
-    
+
     ( or with_[attribute] and without_[attribute] )
-    
+
 
 == Examples
 
