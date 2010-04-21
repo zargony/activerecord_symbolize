@@ -24,7 +24,7 @@ Github: http://github.com/zargony/activerecord_symbolize
 
 == Install
 
-Gem:
+=== Gem
 
   gem install symbolize
   config.gem "symbolize", :source => 'http://gemcutter.org'
@@ -35,13 +35,14 @@ Rails 3+ Gemfile
   gem "symbolize"
 
 
-Plugin:
+=== Plugin:
 
   ./script/plugin install git://github.com/nofxx/symbolize.git
 
-or
+or in Rails3+
 
-  rails plugin install in Rails3+
+  rails plugin install ..
+
 
 == Rails 3 (beta)
 
@@ -59,9 +60,10 @@ validates_inclusion_of to restrict the possible values (just like an enum).
         :linux   => "Linux",
         :mac     => "Mac OS X"
       }, :scopes => true
-      symbolize :gui, , :in => [:gnome, :kde, :xfce], :allow_blank => true
+      symbolize :gui,  :in => [:gnome, :kde, :xfce], :allow_blank => true
       symbolize :browser, :in => [:firefox, :opera], :i18n => false, :methods => true
       symbolize :angry, :in => [true, false], :scopes => true
+      symbolize :lang, :in => [:ruby, :c, :erlang], :validate => false
   end
 
 
@@ -74,24 +76,10 @@ Booleans are also supported. See below.
 allow_(blank|nil): What you expect.
 
 
-=== i18n
+=== validate
 
-If you don`t provide a hash with values, it will try i18n:
-
-    activerecord:
-      attributes:
-        user:
-          enums:
-            gui:
-              gnome: Gnome Desktop Enviroment
-              kde: K Desktop Enviroment
-              xfce: XFCE4
-            gender:
-              female: Girl
-              male: Boy
-
-You can skip i18n lookup with :i18n => false
-  symbolize :gender, :in => [:female, :male], :i18n => false
+Set to false to avoid the validation of the input. 
+Useful for a dropdown with an "other" option textfield.
 
 
 === method
@@ -113,6 +101,26 @@ Its possible to use boolean fields also.
       "true": On
       "false": Off
       "nil": Unknown
+
+
+=== i18n
+
+If you don`t provide a hash with values, it will try i18n:
+
+    activerecord:
+      attributes:
+        user:
+          enums:
+            gui:
+              gnome: Gnome Desktop Enviroment
+              kde: K Desktop Enviroment
+              xfce: XFCE4
+            gender:
+              female: Girl
+              male: Boy
+
+You can skip i18n lookup with :i18n => false
+  symbolize :gender, :in => [:female, :male], :i18n => false
 
 
 === scopes (BETA)
