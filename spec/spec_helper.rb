@@ -1,5 +1,9 @@
 require 'rubygems'
-require 'spec'
+begin
+  require 'spec'
+rescue LoadError
+  require 'rspec'
+end
 
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
@@ -15,8 +19,6 @@ I18n.load_path += Dir[File.join(File.dirname(__FILE__), "locales", "*.{rb,yml}")
 I18n.default_locale = "pt"
 CreateTestingStructure.migrate(:up)
 
-
-Spec::Runner.configure do |config|
-
-
-end
+puts "Running AR #{ActiveRecord::VERSION::MAJOR}"
+# Spec::Runner.configure do |config|
+# end

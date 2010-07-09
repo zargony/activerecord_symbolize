@@ -67,21 +67,23 @@ module Symbolize
 
         attr_names.each do |attr_name|
           attr_name = attr_name.to_s
+          const =  "#{attr_name}_values"
           if enum.instance_of?(Hash)
             values = enum
           else
-            if i18n
-              values = hsh[*enum.map { |v| [v, I18n.translate("activerecord.attributes.#{ActiveSupport::Inflector.underscore(self)}.enums.#{attr_name}.#{v}")] }.flatten]
-            else
-              values = hsh[*enum.map { |v| [v, (configuration[:capitalize] ? v.to_s.capitalize : v.to_s)] }.flatten]
-            end
+            values = hsh[*enum.map { |v| [v, (configuration[:capitalize] ? v.to_s.capitalize : v.to_s)] }.flatten]
           end
 
           # Get the values of :in
-          const =  "#{attr_name}_values"
           const_set const.upcase, values unless const_defined? const.upcase
-          # This one is a dropdown helper
-          class_eval "def self.get_#{const}; #{const.upcase}.map(&:reverse); end"
+          ev = if i18n
+            # This one is a dropdown helper
+            code =  "#{const.upcase}.map { |k,v| [I18n.translate(\"activerecord.attributes.\#{ActiveSupport::Inflector.underscore(self)}.enums.#{attr_name}.\#{k}\"), k] }" #.to_sym rescue nila
+            "def self.get_#{const}; #{code}; end;"
+          else
+            "def self.get_#{const}; #{const.upcase}.map(&:reverse); end"
+          end
+          class_eval(ev)
 
           if methods
             values.each do |value|

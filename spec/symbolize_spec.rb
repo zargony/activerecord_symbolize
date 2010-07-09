@@ -36,9 +36,7 @@ User.create(:name => 'Bob' , :other => :bar,:status => :inactive, :so => :mac, :
 
 describe "Symbolize" do
 
-
   it "should respond to symbolize" do
-    p ActiveRecord::VERSION::MAJOR
     ActiveRecord::Base.should respond_to :symbolize
   end
 
@@ -152,6 +150,9 @@ describe "Symbolize" do
 
     describe "ActiveRecord stuff" do
 
+      #
+      #  ActiveRecord < 3
+      #
       if ActiveRecord::VERSION::MAJOR < 3
 
         it "test_symbolized_finder" do
@@ -165,6 +166,9 @@ describe "Symbolize" do
           end
         end
 
+      #
+      #  ActiveRecord >= 3
+      #
       else
 
         it "test_symbolized_finder" do
@@ -261,7 +265,7 @@ describe "Symbolize" do
       end
 
       it "should get the correct values" do
-        User::LANGUAGE_VALUES.should eql({:pt => "Português", :en => "Inglês"})
+        User::LANGUAGE_VALUES.should eql({:pt=>"pt", :en=>"en"})
       end
 
       it "should test boolean" do
@@ -273,7 +277,7 @@ describe "Symbolize" do
       end
 
       it "should get the correct values" do
-        User::SEX_VALUES.should eql({false=>"Masculino", true=>"Feminino"})
+        User::SEX_VALUES.should eql({true=>"true", false=>"false"})
       end
 
       it "should translate a multiword class" do
