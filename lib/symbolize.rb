@@ -68,7 +68,7 @@ module Symbolize
         attr_names.each do |attr_name|
           attr_name = attr_name.to_s
           const =  "#{attr_name}_values"
-          if enum.instance_of?(Hash)
+          if enum.is_a?(Hash)
             values = enum
           else
             values = hsh[*enum.map { |v| [v, (configuration[:capitalize] ? v.to_s.capitalize : v.to_s)] }.flatten]
