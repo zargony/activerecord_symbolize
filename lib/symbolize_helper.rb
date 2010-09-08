@@ -17,11 +17,11 @@ module ActionView
 
     class FormBuilder
       def select_sym(method, choices = nil, options = {}, html_options = {})
-        @template.select_sym(@object_name, method, choices, options, html_options)
+        @template.select_sym(@object_name, method, choices, objectify_options(options), html_options)
       end
 
       def radio_sym(method, choices = nil, options = {})
-        @template.radio_sym(@object_name, method, choices, options)
+        @template.radio_sym(@object_name, method, choices, objectify_options(options))
       end
     end
 
