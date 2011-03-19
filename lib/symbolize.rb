@@ -59,11 +59,7 @@ module Symbolize
 
       unless enum.nil?
         # Little monkeypatching, <1.8 Hashes aren't ordered.
-        hsh = if RUBY_VERSION > '1.9'
-          Hash
-        elsif defined?('ActiveSupport')
-          ActiveSupport::OrderedHash
-        end
+        hsh = RUBY_VERSION > '1.9' || !defined?("ActiveSupport") ? Hash : ActiveSupport::OrderedHash
 
         attr_names.each do |attr_name|
           attr_name = attr_name.to_s
