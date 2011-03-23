@@ -31,7 +31,8 @@ end
 
 class Permission < ActiveRecord::Base
   validates_presence_of :name
-  symbolize :lvl, :in => (1..9).to_a, :i18n => false, :default => 1
+  symbolize :kind, :in => [:temp, :perm], :default => :perm
+  symbolize :lvl, :in => (1..9).to_a, :i18n => false#, :default => 1
 end
 
 # Make with_scope public-usable for testing
@@ -71,11 +72,11 @@ describe "Symbolize" do
       # @user.read_attribute(:status).should eql('active')
     end
 
-    it "should acts nice with numbers" do
+    it "should work nice with numbers" do
       @user.status = 43
-      @user.status.should be_nil
-      @user.status_before_type_cast.should be_nil
-      @user.read_attribute(:status).should be_nil
+      @user.status.should_not be_nil
+      # @user.status_before_type_cast.should be_nil
+      # @user.read_attribute(:status).should be_nil
     end
 
     it "should acts nice with nil" do
@@ -270,10 +271,39 @@ describe "Symbolize" do
 
   describe "more tests on Permission" do
 
-    it "should work with default values"
+    it "should use default value on object build" do
+      Permission.new.kind.should eql(:perm)
+    end
 
-    it "should work with default values on edit"
+    it "should not interfer on create" do
+      Permission.create!(:name => "p7", :kind =>:temp, :lvl => 7)
+      Permission.find_by_name("p7").kind.should eql(:temp)
+    end
 
+    it "should work on create" do
+      pm = Permission.new(:name => "p7", :lvl => 7)
+      pm.should be_valid
+      pm.save.should be_true
+    end
+
+    it "should work on create" do
+      Permission.create!(:name => "p8", :lvl => 9)
+      Permission.find_by_name("p8").kind.should eql(:perm)
+    end
+
+    it "should work on edit" do
+      pm = Permission.find_by_name("p8")
+      pm.kind = :temp
+      pm.save
+      Permission.find_by_name("p8").kind.should eql(:temp)
+    end
+
+    it "should work with default values" do
+      pm = Permission.new(:name => "p9")
+      pm.lvl = 9
+      pm.save
+      Permission.find_by_name("p9").lvl.to_i.should eql(9)
+    end
 
   end
 

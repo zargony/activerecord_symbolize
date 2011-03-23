@@ -17,8 +17,9 @@ class CreateTestingStructure < ActiveRecord::Migration
       t.string :key, :null => false
     end
     create_table :permissions do |t|
-      t.string :name
-      t.string :key, :null => false
+      t.string  :name, :null => false
+      t.string  :kind, :null => false
+      t.integer :lvl,  :null => false
     end
   end
 

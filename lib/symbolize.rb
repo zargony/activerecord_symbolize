@@ -52,11 +52,11 @@ module Symbolize
       configuration.update(attr_names.extract_options!)
 
       enum = configuration[:in] || configuration[:within]
-      i18n = configuration[:i18n].nil? && !enum.instance_of?(Hash) && enum ? true : configuration[:i18n]
-      methods = configuration[:methods]
-      scopes = configuration[:scopes]
-      validation = configuration[:validation] != false
-      default = configuration[:default]
+      i18n = configuration.delete(:i18n).nil? && !enum.instance_of?(Hash) && enum ? true : configuration[:i18n]
+      scopes  = configuration.delete :scopes
+      methods = configuration.delete :methods
+      validation     = configuration.delete(:validation) != false
+      default_option = configuration.delete :default
 
       unless enum.nil?
         # Little monkeypatching, <1.8 Hashes aren't ordered.
@@ -91,38 +91,44 @@ module Symbolize
             end
           end
 
-
           if scopes
             scope_comm = lambda { |*args| ActiveRecord::VERSION::MAJOR >= 3 ? scope(*args) : named_scope(*args)}
             values.each do |value|
-                if value[0].respond_to?(:to_sym)
-                  scope_comm.call( value[0].to_sym, :conditions => { attr_name => value[0].to_sym })
-                else
-                  if value[0] == true || value[0] == false
-                    scope_comm.call( "with_#{attr_name}", :conditions => { attr_name => true })
-                    scope_comm.call( "without_#{attr_name}", :conditions => { attr_name => false })
+              if value[0].respond_to?(:to_sym)
+                scope_comm.call value[0].to_sym, :conditions => { attr_name => value[0].to_sym }
+              else
+                if value[0] == true || value[0] == false
+                  scope_comm.call "with_#{attr_name}",    :conditions => { attr_name => true }
+                  scope_comm.call "without_#{attr_name}", :conditions => { attr_name => false }
 
-                    scope_comm.call( attr_name.to_sym, :conditions => { attr_name => true })
-                    scope_comm.call( "not_#{attr_name}", :conditions => { attr_name => false })
-                  end
+                  scope_comm.call attr_name.to_sym,   :conditions => { attr_name => true }
+                  scope_comm.call "not_#{attr_name}", :conditions => { attr_name => false }
                 end
+              end
             end
           end
         end
 
         if validation
-          class_eval "validates_inclusion_of :#{attr_names.join(', :')}, configuration"
+          class_eval "validates_inclusion_of :#{attr_names.join(', :')}, #{configuration}"
         end
       end
 
       attr_names.each do |attr_name|
-        attr_name = attr_name.to_s
-        class_eval("def #{attr_name}; read_and_symbolize_attribute('#{attr_name}'); end")
-        class_eval("def #{attr_name}= (value); write_symbolized_attribute('#{attr_name}', value); end")
+
+        if default_option
+          class_eval("def #{attr_name}; read_and_symbolize_attribute('#{attr_name}') || :#{default_option}; end")
+          class_eval("def #{attr_name}= (value); write_symbolized_attribute('#{attr_name}', (value && !value.empty? ? value : #{default_option})); end")
+          class_eval("def set_default_for_attr_#{attr_name}; self[:#{attr_name}] ||= :#{default_option}; end")
+          class_eval("before_save :set_default_for_attr_#{attr_name}")
+        else
+          class_eval("def #{attr_name}; read_and_symbolize_attribute('#{attr_name}'); end")
+          class_eval("def #{attr_name}= (value); write_symbolized_attribute('#{attr_name}', value); end")
+        end
         if i18n
           class_eval("def #{attr_name}_text; read_i18n_attribute('#{attr_name}'); end")
         elsif enum
-          class_eval("def #{attr_name}_text; #{attr_name.upcase}_VALUES[#{attr_name}]; end")
+          class_eval("def #{attr_name}_text; #{attr_name.to_s.upcase}_VALUES[#{attr_name}]; end")
         else
           class_eval("def #{attr_name}_text; #{attr_name}.to_s; end")
         end
@@ -134,14 +140,14 @@ module Symbolize
   def symbolize_attribute attr
     case attr
       when String then attr.empty? ? nil : attr.to_sym
-      when Symbol, TrueClass, FalseClass then attr
+      when Symbol, TrueClass, FalseClass, Numeric then attr
       else nil
     end
   end
 
   # Return an attribute's value as a symbol or nil
   def read_and_symbolize_attribute attr_name
-    symbolize_attribute read_attribute(attr_name)
+    symbolize_attribute self[attr_name]
   end
 
   # Return an attribute's i18n
