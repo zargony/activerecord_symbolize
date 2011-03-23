@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{symbolize}
-  s.version = "3.0.3"
+  s.version = "3.1.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Marcos Piccinini"]
-  s.date = %q{2011-03-18}
+  s.date = %q{2011-03-23}
   s.description = %q{ActiveRecord enums with i18n}
   s.email = %q{x@nofxx.com}
   s.extra_rdoc_files = [
@@ -23,7 +23,8 @@ Gem::Specification.new do |s|
     "VERSION",
     "init.rb",
     "lib/symbolize.rb",
-    "lib/symbolize_helper.rb",
+    "lib/symbolize/railtie.rb",
+    "lib/symbolize/symbolize_helper.rb",
     "rails/init.rb",
     "spec/db/create_testing_structure.rb",
     "spec/locales/en.yml",

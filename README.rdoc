@@ -60,10 +60,21 @@ validates_inclusion_of to restrict the possible values (just like an enum).
         :linux   => "Linux",
         :mac     => "Mac OS X"
       }, :scopes => true
+
+      # Allow blank
       symbolize :gui,  :in => [:gnome, :kde, :xfce], :allow_blank => true
+
+      # Don`t i18n
       symbolize :browser, :in => [:firefox, :opera], :i18n => false, :methods => true
+
+      # Scopes
       symbolize :angry, :in => [true, false], :scopes => true
+
+      # Don`t validate
       symbolize :lang, :in => [:ruby, :c, :erlang], :validate => false
+
+      # Default
+      symbolize :kind, :in => [:admin, :manager, :user], :default => :admin
   end
 
 
@@ -78,7 +89,7 @@ allow_(blank|nil): What you expect.
 
 === validate
 
-Set to false to avoid the validation of the input. 
+Set to false to avoid the validation of the input.
 Useful for a dropdown with an "other" option textfield.
 
 
@@ -140,6 +151,13 @@ For boolean colums you can use
     User.not_angry => User.find(:all, :conditions => { :angry => false })
 
     ( or with_[attribute] and without_[attribute] )
+
+
+=== default (BETA)
+
+As the name suggest, the symbol you choose as default will be set in new objects automatically.
+
+     User.new.kind # Will print :admin
 
 
 == Examples
