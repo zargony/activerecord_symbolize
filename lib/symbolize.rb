@@ -56,6 +56,7 @@ module Symbolize
       methods = configuration[:methods]
       scopes = configuration[:scopes]
       validation = configuration[:validation] != false
+      default = configuration[:default]
 
       unless enum.nil?
         # Little monkeypatching, <1.8 Hashes aren't ordered.
@@ -152,7 +153,7 @@ module Symbolize
   def write_symbolized_attribute attr_name, value
     val = { "true" => true, "false" => false }[value]
     val = symbolize_attribute(value) if val.nil?
-    write_attribute(attr_name, val)
+    self[attr_name] = val
   end
 end
 

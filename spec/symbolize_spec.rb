@@ -16,10 +16,22 @@ class User < ActiveRecord::Base
   symbolize :gui, :allow_blank => true, :in => [:cocoa, :qt, :gtk], :i18n => false
   symbolize :karma, :in => [:good, :bad, :ugly], :methods => true, :i18n => false, :allow_nil => true
   symbolize :cool, :in => [true, false], :scopes => true
+
+  has_many :extras, :dependent => :destroy, :class_name => "UserExtra"
+  has_many :access, :dependent => :destroy, :class_name => "UserAccess"
 end
 
 class UserSkill < ActiveRecord::Base
   symbolize :kind, :in => [:agility, :magic]
+end
+
+class UserExtra < ActiveRecord::Base
+  symbolize :key, :in => [:one, :another]
+end
+
+class Permission < ActiveRecord::Base
+  validates_presence_of :name
+  symbolize :lvl, :in => (1..9).to_a, :i18n => false, :default => 1
 end
 
 # Make with_scope public-usable for testing
@@ -40,7 +52,7 @@ describe "Symbolize" do
     ActiveRecord::Base.should respond_to :symbolize
   end
 
-  describe "Instantiated" do
+  describe "User Instantiated" do
     before(:each) do
       @user = User.first
     end
@@ -148,76 +160,22 @@ describe "Symbolize" do
       #   assert_equal "'weird''; chars'", @user.status.quoted_id
     end
 
-    describe "ActiveRecord stuff" do
-
-      #
-      #  ActiveRecord < 3
-      #
-      if ActiveRecord::VERSION::MAJOR < 3
-
-        it "test_symbolized_finder" do
-          User.find(:all, :conditions => { :status => :inactive }).map(&:name).should eql(['Bob'])
-          User.find_all_by_status(:inactive).map(&:name).should eql(['Bob'])
-        end
-
-        it "test_symbolized_with_scope" do
-          User.with_scope(:find => { :conditions => { :status => :inactive }}) do
-            User.find(:all).map(&:name).should eql(['Bob'])
-          end
-        end
-
-      #
-      #  ActiveRecord >= 3
-      #
-      else
-
-        it "test_symbolized_finder" do
-          User.where({ :status => :inactive }).all.map(&:name).should eql(['Bob'])
-          User.find_all_by_status(:inactive).map(&:name).should eql(['Bob'])
-        end
-
-        it "test_symbolized_with_scope" do
-          User.with_scope(:find => { :conditions => { :status => :inactive }}) do
-            User.find(:all).map(&:name).should eql(['Bob'])
-          end
-        end
-
-        describe "Named Scopes" do
-
-          before do
-            @anna = User.find_by_name!('Anna')
-            @bob = User.find_by_name!('Bob')
-          end
-
-          it "should have main named scope" do
-            User.inactive.should == [@bob]
-          end
-
-          it "should have other to test better" do
-            User.linux.should == [@anna]
-          end
-
-          it "should have 'with' helper" do
-            User.with_sex.should == [@anna]
-          end
-
-          it "should have 'without' helper" do
-            User.without_sex.should == [@bob]
-          end
-
-          it "should have 'attr_name' helper" do
-            User.cool.should == [@anna]
-          end
-
-          it "should have 'not_attr_name' helper" do
-            User.not_cool.should == [@bob]
-          end
-
-        end
-
-      end
-
+    it "should work fine through relations" do
+      @user.extras.create(:key => :one)
+      UserExtra.first.key.should eql(:one)
     end
+
+    it "should play fine with null db columns" do
+      new_extra = @user.extras.build
+      new_extra.should_not be_valid
+    end
+
+    it "should play fine with null db columns" do
+      new_extra = @user.extras.build
+      new_extra.should_not be_valid
+    end
+
+
 
     describe "View helpers" do
       include ActionView::Helpers::FormHelper
@@ -304,6 +262,86 @@ describe "Symbolize" do
         @user.karma = "good"
         @user.should be_good
         @user.should_not be_bad
+      end
+
+    end
+
+  end
+
+  describe "more tests on Permission" do
+
+    it "should work with default values"
+
+    it "should work with default values on edit"
+
+
+  end
+
+  describe "ActiveRecord stuff" do
+
+    #
+    #  ActiveRecord <= 2
+    #
+    if ActiveRecord::VERSION::MAJOR < 3
+
+      it "test_symbolized_finder" do
+        User.find(:all, :conditions => { :status => :inactive }).map(&:name).should eql(['Bob'])
+        User.find_all_by_status(:inactive).map(&:name).should eql(['Bob'])
+      end
+
+      it "test_symbolized_with_scope" do
+        User.with_scope(:find => { :conditions => { :status => :inactive }}) do
+          User.find(:all).map(&:name).should eql(['Bob'])
+        end
+      end
+
+      #
+      #  ActiveRecord >= 3
+      #
+    else
+
+      it "test_symbolized_finder" do
+        User.where({ :status => :inactive }).all.map(&:name).should eql(['Bob'])
+        User.find_all_by_status(:inactive).map(&:name).should eql(['Bob'])
+      end
+
+      it "test_symbolized_with_scope" do
+        User.with_scope(:find => { :conditions => { :status => :inactive }}) do
+          User.find(:all).map(&:name).should eql(['Bob'])
+        end
+      end
+
+      describe "Named Scopes" do
+
+        before do
+          @anna = User.find_by_name!('Anna')
+          @bob = User.find_by_name!('Bob')
+        end
+
+        it "should have main named scope" do
+          User.inactive.should == [@bob]
+        end
+
+        it "should have other to test better" do
+          User.linux.should == [@anna]
+        end
+
+        it "should have 'with' helper" do
+          User.with_sex.should == [@anna]
+        end
+
+        it "should have 'without' helper" do
+          User.without_sex.should == [@bob]
+        end
+
+        it "should have 'attr_name' helper" do
+          User.cool.should == [@anna]
+        end
+
+        it "should have 'not_attr_name' helper" do
+          User.not_cool.should == [@bob]
+        end
+
       end
 
     end
