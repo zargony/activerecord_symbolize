@@ -55,6 +55,7 @@ module Symbolize
       i18n = configuration.delete(:i18n).nil? && !enum.instance_of?(Hash) && enum ? true : configuration[:i18n]
       scopes  = configuration.delete :scopes
       methods = configuration.delete :methods
+      capitalize = configuration.delete :capitalize
       validation     = configuration.delete(:validation) != false
       default_option = configuration.delete :default
 
@@ -69,7 +70,7 @@ module Symbolize
             values = enum
           else
             values = hsh.new
-            enum.map { |v| [v, (configuration[:capitalize] ? v.to_s.capitalize : v.to_s)] }.each { |k, v| values[k] = v }
+            enum.map { |v| [v, (capitalize ? v.to_s.capitalize : v.to_s)] }.each { |k, v| values[k] = v }
           end
 
           # Get the values of :in
@@ -110,7 +111,8 @@ module Symbolize
         end
 
         if validation
-          class_eval "validates_inclusion_of :#{attr_names.join(', :')}, #{configuration}"
+          p "validates_inclusion_of :#{attr_names.join(', :')}, #{configuration.inspect}"
+          class_eval "validates_inclusion_of :#{attr_names.join(', :')}, #{configuration.inspect}"
         end
       end
 
