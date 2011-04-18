@@ -244,6 +244,11 @@ describe "Symbolize" do
         @skill.kind_text.should eql("Mágica")
       end
 
+      it "should return nil if there's no value" do
+        @skill = UserSkill.create(:kind => nil)
+        @skill.kind_text.should be_nil
+      end
+
     end
 
     describe "Methods" do
